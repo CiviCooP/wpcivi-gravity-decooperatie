@@ -207,6 +207,7 @@ class SignupFormHandler extends BasePlugin
                 'activity_type_id' => "WPCivi_SignupForm_Result",
                 'status_id'        => "Completed",
                 'target_id'        => $contact->id,
+                'source_contact_id' => WPCiviApi::SYSTEM_CONTACT_ID,
                 'subject'          => "Contact added by SignupFormHandler",
                 'details'          => "Gravity Forms Entry ID: " . $entry['id'],
             ]);
