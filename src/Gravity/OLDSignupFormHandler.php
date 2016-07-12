@@ -1,50 +1,16 @@
 <?php
-namespace WPCivi\Gravity\Jourcoop;
+namespace WPCivi\Jourcoop\Gravity;
 
-use WPCivi\Shared\BasePlugin;
-use WPCivi\Shared\WPCiviApi;
+use WPCivi\Shared\API\WPCiviApi;
+use WPCivi\Shared\Gravity\BaseFormHandler;
 
 /**
- * Class SignupFormPlugin
- * Handles Gravity Form submissions for the DeCooperatie.org Signup Form.
- * @package WPCivi\Gravity\Jourcoop
+ * Class Gravity\OldSignupFormHandler
+ * First version (06/2016) of the signup form handler for De Cooperatie.
+ * @package WPCivi\Jourcoop
  */
-class SignupFormHandler extends BasePlugin
+class OldSignupFormHandler extends BaseFormHandler
 {
-
-    /**
-     * Register Gravity Form submission hooks if Gravity Forms is active.
-     */
-    public function register()
-    {
-        if (!$this->isPluginActive('gravityforms')) {
-            return true;
-        }
-
-        $this->addFilter('gform_save_field_value', [$this, 'saveFieldValue'], 10, 4);
-        $this->addAction('gform_after_submission', [$this, 'afterSubmission'], 10, 2);
-
-        $this->addFilter('gform_entry_meta', [$this, 'entryMeta'], 10, 2);
-        $this->addAction('gform_entries_column', [$this, 'entriesColumn'], 10, 5);
-        $this->addAction('gform_entry_detail', [$this, 'entryDetail'], 10, 2);
-    }
-
-    /**
-     * Check if this handler class is enabled for this form
-     * @param mixed $form Form
-     * @return bool Is enabled?
-     */
-    private function handlerIsEnabled($form)
-    {
-        if (!empty($form['wpcivi_form_handler'])) {
-            $class = new \ReflectionClass($this);
-            if ($class->getShortName() == $form['wpcivi_form_handler']) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
      * Implements gform_save_field_value.
      * Filters field values. (There may also be separate form field handlers in separate classes)

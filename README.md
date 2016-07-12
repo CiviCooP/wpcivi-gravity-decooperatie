@@ -1,5 +1,5 @@
-civicoop/wpcivi-gravity-jourcoop
-================================
+civicoop/wpcivi-jourcoop
+========================
 
-Wordpress plugin that handles Gravity Forms submissions.  
-This plugin contains specific logic for the forms that are used on decooperatie.org.
+Wordpress plugin with specific code for WordPress + CiviCRM at decooperatie.org.  
+This plugin currently handles Gravity Forms submissions.  
