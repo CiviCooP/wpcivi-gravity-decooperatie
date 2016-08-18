@@ -1,7 +1,8 @@
 <?php
 namespace WPCivi\Jourcoop\Gravity;
 
-use WPCivi\Shared\API\WPCiviApi;
+use WPCivi\Jourcoop\Entity\Activity;
+use WPCivi\Shared\Civi\WPCiviApi;
 use WPCivi\Shared\Gravity\BaseFormHandler;
 
 /**
@@ -154,7 +155,7 @@ class OldSignupFormHandler extends BaseFormHandler
                 'activity_type_id' => "WPCivi_OldSignupForm_Result",
                 'status_id'        => "Completed",
                 'target_id'        => $contact->id,
-                'source_contact_id' => WPCiviApi::SYSTEM_CONTACT_ID,
+                'source_contact_id' => 1, // No longer supported
                 'subject'          => "Contact added by SignupFormHandler",
                 'details'          => "Gravity Forms Entry ID: " . $entry['id'],
             ]);

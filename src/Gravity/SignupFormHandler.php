@@ -1,7 +1,9 @@
 <?php
 namespace WPCivi\Jourcoop\Gravity;
 
-use WPCivi\Shared\API\WPCiviApi;
+use WPCivi\Jourcoop\Entity\Contact;
+use WPCivi\Jourcoop\Entity\Membership;
+use WPCivi\Jourcoop\Entity\Activity;
 use WPCivi\Shared\Gravity\BaseFormHandler;
 
 /**
@@ -13,7 +15,7 @@ class SignupFormHandler extends BaseFormHandler
 {
     /**
      * Implements gform_save_field_value.
-     * Filters field values. (There may also be separate form field handlers in separate classes)
+     * Filters field values (there may also be separate form field handlers in separate classes).
      * @param mixed $value Current value
      * @param mixed $lead Lead
      * @param mixed $field Field
@@ -67,103 +69,31 @@ class SignupFormHandler extends BaseFormHandler
 
         // Get form data
         $data = $this->getDataKVArray($entry, $form);
+        $contact = null;
 
         // Set local timezone! (WP uses UTC, Civi uses default timezone)
         date_default_timezone_set(ini_get('date.timezone'));
 
         // Start submission to CiviCRM
-        $wpcivi = WPCiviApi::getInstance();
-        $contact = null;
-
         try {
-            // Add contact (uses custom create method with short syntax + error handling)
-            $contact = $wpcivi->create('Contact', [
-                'contact_type' => 'Individual',
-                'first_name'   => $data['voornaam'],
-                'middle_name'  => $data['tussenvoegsel'],
-                'last_name'    => $data['achternaam'],
-                'display_name' => ($data['voornaam'] . (!empty($data['tussenvoegsel']) ? ' ' . $data['tussenvoegsel'] : '') . $data['achternaam']),
-                'source'       => 'Website (new)',
-            ]);
 
-            // Add address
-            if (!empty($data['postcode']) && !empty($data['huisnummer'])) {
-                $address = $wpcivi->create('Address', [
-                    'contact_id'       => $contact->id,
-                    'is_primary'       => 1,
-                    'location_type_id' => WPCiviApi::LOCATION_TYPE_WORK,
-                    'street_name'      => $data['straat'],
-                    'street_number'    => $data['huisnummer'],
-                    'street_unit'      => $data['toevoeging'],
-                    'postal_code'      => $data['postcode'],
-                    'city'             => $data['woonplaats'],
-                    'country_id'       => WPCiviApi::COUNTRY_CODE_NL,
-                ]);
-            }
+            // Add contact including address / phone / email data
+            $contact = Contact::createContact($data);
 
-            // Add email address
-            if (!empty($data['emailadres'])) {
-                $email = $wpcivi->create('Email', [
-                    'contact_id'       => $contact->id,
-                    'is_primary'       => 1,
-                    'location_type_id' => WPCiviApi::LOCATION_TYPE_WORK,
-                    'email'            => $data['emailadres'],
-                ]);
-            }
-
-            // Add phone number
-            if (!empty($data['telefoon'])) {
-                $phone = $wpcivi->create('Phone', [
-                    'contact_id'       => $contact->id,
-                    'is_primary'       => 1,
-                    'location_type_id' => WPCiviApi::LOCATION_TYPE_WORK,
-                    'phone_type_id'    => 'Phone',
-                    'phone'            => $data['telefoon'],
-                ]);
-            }
-
-            // Add mobile number
-            if (!empty($data['mobiel'])) {
-                $mobile = $wpcivi->create('Phone', [
-                    'contact_id'       => $contact->id,
-                    'is_primary'       => 1,
-                    'location_type_id' => WPCiviApi::LOCATION_TYPE_WORK,
-                    'phone_type_id'    => 'Mobile',
-                    'phone'            => $data['mobiel'],
-                ]);
-            }
-
-            // Adds custom fields data (uses custom method for shorter syntax)
-            $wpcivi->addCustomData($contact->id, [
-                ['Administrative_Data', 'Bank_Account_IBAN', $data['rekeningnummeriban']],
-                ['Administrative_Data', 'NVJ_Member', $data['benjelidvandenvj']],
-            ]);
-
-            // Add membership (with status Pending and without contributions)
-            // (Is dit al genoeg? Volgens mij wel)
+            // Add membership (with status Pending by default and without contributions)
             $membershipType = ($data['benjelidvandenvj'] == true ? 'Lid (NVJ)' : 'Lid');
-            $wpcivi->create('Membership', [
+            $membership = Membership::create([
                 'contact_id' => $contact->id,
                 'membership_type_id' => $membershipType,
-                'is_override' => 1,
-                'status_id' => 'Pending',
-                'join_date' => date('Ymdhis'),
-                'source' => 'Website (new)',
-            ]);
+                ]);
 
             // Add activity
-            $wpcivi->create('Activity', [
-                'activity_type_id' => "WPCivi_SignupForm_Result",
-                'status_id'        => "Completed",
-                'target_id'        => $contact->id,
-                'source_contact_id' => WPCiviApi::SYSTEM_CONTACT_ID,
-                'subject'          => "Contact and membership added by SignupFormHandler",
-                'details'          => "Gravity Forms Entry ID: " . $entry['id'],
-            ]);
+            Activity::createActivity($contact->id, "WPCivi_SignupForm_Result",
+                "Contact and membership added by SignupFormHandler", "Gravity Forms Entry ID: {$entry['id']}");
 
             // Add status and contact id to gform meta data
             gform_update_meta($entry['id'], 'wpcivi_status', 'SUCCESS', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_contactid', (isset($contact->id) ? $contact->id : null), $form['id']);
+            gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->id, $form['id']);
 
         } catch (\Exception $e) {
 
@@ -185,14 +115,11 @@ class SignupFormHandler extends BaseFormHandler
 
                 // Try to create an activity
                 try {
-                    $wpcivi->create('Activity', [
-                        'activity_type_id' => "WPCivi_SignupForm_Result",
-                        'status_id'        => "Cancelled",
-                        'target_id'        => $contact->id,
-                        'subject'          => "An error occurred while handling this form submission",
-                        'details'          => "Error: " . $e->getMessage() . "<br>\nGravity Forms Entry ID: " . $entry['id'] . ".",
-                    ]);
+                    Activity::createActivity($contact->id, "WPCivi_SignupForm_Result",
+                        "An error occurred while handling this form submission", "Error: " . $e->getMessage() . "<br>
+                         Gravity Forms Entry ID: " . $entry['id'] . ".", "Cancelled");
                 } catch (\Exception $e) {
+                    // We won't create an activity about failing to create an activity after failing to create a contact.
                 }
             }
         }

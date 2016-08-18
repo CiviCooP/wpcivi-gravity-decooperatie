@@ -1,9 +1,9 @@
 <?php
 
 /*
-Plugin Name: WPCivi Integration for DeCooperatie.org
+Plugin Name: WPCivi Jourcoop Forms
 Plugin URI: https://github.com/civicoop/wpcivi-jourcoop
-Description: Wordpress plugin with code specific for decooperatie.org (like handling Gravity Forms submissions)
+Description: Integration logic specific for De Cooperatie: handlers for custom Gravity Forms.
 Version: 1.2
 Author: CiviCooP / Kevin Levie
 Author URI: https://levity.nl
@@ -19,14 +19,16 @@ Text Domain: wpcivi
 
 add_action('plugins_loaded', function () {
 
+    // -----------------------------------------------------
+
     // Get autoloader and add plugin namespace (only available after plugins have been loaded...)
     $wpciviloader = \WPCivi\Shared\Autoloader::getInstance();
     $wpciviloader->addNamespace('WPCivi\Jourcoop', __DIR__ . '/src/');
 
-    // Add BackendFormHandler (adds functionality to form settings)
-    $backendFormHandler = new \WPCivi\Shared\Gravity\BackendFormHandler;
+    // -----------------------------------------------------
 
-    // Add frontend form handlers (more can be added here)
+    // Add backend and frontend form handlers here:
+    $backendFormHandler = new \WPCivi\Shared\Gravity\BackendFormHandler;
     $oldSignupFormHandler = new \WPCivi\Jourcoop\Gravity\OldSignupFormHandler;
     $signupFormHandler = new \WPCivi\Jourcoop\Gravity\SignupFormHandler;
 
