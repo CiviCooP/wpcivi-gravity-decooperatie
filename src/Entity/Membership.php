@@ -1,17 +1,32 @@
 <?php
-namespace WPCivi\Jourcoop\Civi\Entity;
+namespace WPCivi\Jourcoop\Entity;
 
-use WPCivi\Shared\Civi\Entity;
+use WPCivi\Shared\Entity\Membership as DefaultMembership;
+use WPCivi\Shared\EntityCollection;
 
 /**
  * Class Entity\Membership.
  * @package WPCivi\Jourcoop
  */
-class Membership extends Entity
+class Membership extends DefaultMembership
 {
 
     /**
-     * Default parameters for new memberships at De Cooperatie (at minimum):
+     * Get active memberships (all memberships or for contact $contact_id)
+     * @param null $contact_id Contact ID or null
+     * @return EntityCollection Collection of memberships
+     */
+    public static function getActiveMemberships($contact_id = null)
+    {
+        return EntityCollection::get('Membership', [
+            'membership_type_id'   => ['Lid', 'Lid (NVJ)'],
+            'membership_status_id' => ['New', 'Current', 'Grace'],
+            'contact_id'           => $contact_id,
+        ]);
+    }
+
+    /**
+     * Default (minimum) parameters for new memberships at De Cooperatie:
      */
     protected function setDefaults()
     {

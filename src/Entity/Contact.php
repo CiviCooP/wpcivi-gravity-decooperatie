@@ -1,6 +1,7 @@
 <?php
 namespace WPCivi\Jourcoop\Entity;
 
+use WPCivi\Shared\Civi\WPCiviApi;
 use WPCivi\Shared\Civi\WPCiviException;
 use WPCivi\Shared\Entity\Address;
 use WPCivi\Shared\Entity\Contact as DefaultContact;
@@ -16,23 +17,37 @@ class Contact extends DefaultContact
 {
 
     /**
-     * Get contacts
-     * @param array $params API parameters
-     * @return EntityCollection Collection of Contact entities
-     */
-    public static function getContacts($params = []) {
-
-        $contacts = new EntityCollection('Contact');
-        return $contacts->get($params);
-    }
-
-    /**
      * Get contacts that are active members
+     * (This is currently a chain API call, probably less efficient than
+     *   first request Membership.get + second request Contact.get with contact_id IN)
      * @param array $params API parameters
      * @return EntityCollection Collection of Contact entities
      */
     public static function getMembers($params = []) {
-        // TODO Implement search (= getContacts + automatically add membership check).
+
+        $params = array_merge($params, [
+            'api.Membership.get' => [
+                'membership_type_id' => ["Lid", "Lid (NVJ)"],
+                'status_id'          => ["New", "Current", "Grace"],
+            ],
+            'options' => ['limit' => 0],
+        ]);
+        $wpcivi = WPCiviApi::getInstance();
+        $results = $wpcivi->api('Contact', 'get', $params);
+
+        $collection = EntityCollection::create('Contact');
+        if($results && !empty($results->values)) {
+            foreach($results->values as $r) {
+                if($r->{'api.Membership.get'}->count > 0) {
+                    $entity = new self;
+                    unset($r->{'api.Membership.get'});
+                    $entity->setArray($r);
+                    $collection->add($entity);
+                }
+            }
+        }
+
+        return $collection;
     }
 
     /**
@@ -88,6 +103,17 @@ class Contact extends DefaultContact
         // Save contact and reload
         $contact->save();
         return $contact;
+    }
+
+    /**
+     * Get active memberships for the current contact
+     * @return EntityCollection Collection of active memberships
+     */
+    public function getActiveMemberships() {
+        if(!isset($this->memberships)) {
+            $this->memberships = Membership::getActiveMemberships($this->id);
+        }
+        return $this->memberships;
     }
 
 }

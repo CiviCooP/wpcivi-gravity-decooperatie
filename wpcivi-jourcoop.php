@@ -28,8 +28,8 @@ add_action('plugins_loaded', function () {
     // -----------------------------------------------------
 
     // Add backend and frontend form handlers here:
-    $backendFormHandler = new \WPCivi\Shared\Gravity\BackendFormHandler;
-    $oldSignupFormHandler = new \WPCivi\Jourcoop\Gravity\OldSignupFormHandler;
-    $signupFormHandler = new \WPCivi\Jourcoop\Gravity\SignupFormHandler;
+    new \WPCivi\Shared\Gravity\BackendFormHandler;
+    new \WPCivi\Jourcoop\Gravity\OldSignupFormHandler;
+    new \WPCivi\Jourcoop\Gravity\SignupFormHandler;
 
 });

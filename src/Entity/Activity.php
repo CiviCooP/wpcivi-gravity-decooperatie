@@ -1,7 +1,6 @@
 <?php
 namespace WPCivi\Jourcoop\Entity;
 
-use WPCivi\Shared\Civi\WPCiviApi;
 use WPCivi\Shared\Civi\WPCiviException;
 use WPCivi\Shared\Entity\Activity as DefaultActivity;
 
