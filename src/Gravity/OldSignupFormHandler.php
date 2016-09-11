@@ -12,6 +12,12 @@ use WPCivi\Shared\Gravity\BaseFormHandler;
  */
 class OldSignupFormHandler extends BaseFormHandler
 {
+
+    /**
+     * Set (pretty) class name
+     */
+    protected $label = '[OLD] Signup Form Handler';
+
     /**
      * Implements gform_save_field_value.
      * Filters field values. (There may also be separate form field handlers in separate classes)
@@ -25,7 +31,7 @@ class OldSignupFormHandler extends BaseFormHandler
     {
         // Check if handler is enabled
         if (!$this->handlerIsEnabled($form)) {
-            return $value;
+            return $form;
         }
 
         // Check fields based on field label
@@ -63,7 +69,7 @@ class OldSignupFormHandler extends BaseFormHandler
     {
         // Check if handler is enabled
         if (!$this->handlerIsEnabled($form)) {
-            return true;
+            return $form;
         }
 
         // Get form data

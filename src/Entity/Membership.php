@@ -2,7 +2,7 @@
 namespace WPCivi\Jourcoop\Entity;
 
 use WPCivi\Shared\Entity\Membership as DefaultMembership;
-use WPCivi\Shared\EntityCollection;
+use WPCivi\Jourcoop\EntityCollection;
 
 /**
  * Class Entity\Membership.

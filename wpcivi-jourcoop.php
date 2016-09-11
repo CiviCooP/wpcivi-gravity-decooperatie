@@ -1,10 +1,10 @@
 <?php
 
 /*
-Plugin Name: WPCivi Jourcoop Forms
+Plugin Name: WPCivi Jourcoop
 Plugin URI: https://github.com/civicoop/wpcivi-jourcoop
-Description: Integration logic specific for De Cooperatie: handlers for custom Gravity Forms.
-Version: 1.2
+Description: Integration logic specific for De Coöperatie: custom forms, widgets and other functions.
+Version: 1.3.0
 Author: CiviCooP / Kevin Levie
 Author URI: https://levity.nl
 License: AGPL 3 or later
@@ -19,17 +19,15 @@ Text Domain: wpcivi
 
 add_action('plugins_loaded', function () {
 
-    // -----------------------------------------------------
+    if (!class_exists('\WPCivi\Shared\Autoloader')) {
+        throw new \Exception("Plugin error: 'wpcivi_jourcoop' requires 'wpcivi_shared'.");
+    }
 
-    // Get autoloader and add plugin namespace (only available after plugins have been loaded...)
-    $wpciviloader = \WPCivi\Shared\Autoloader::getInstance();
-    $wpciviloader->addNamespace('WPCivi\Jourcoop', __DIR__ . '/src/');
+    // Register autoloader
+    $loader = \WPCivi\Shared\Autoloader::getInstance();
+    $loader->addNamespace('WPCivi\Jourcoop', __DIR__ . '/src/');
 
-    // -----------------------------------------------------
-
-    // Add backend and frontend form handlers here:
-    new \WPCivi\Shared\Gravity\BackendFormHandler;
-    new \WPCivi\Jourcoop\Gravity\OldSignupFormHandler;
-    new \WPCivi\Jourcoop\Gravity\SignupFormHandler;
-
+    // Register plugin (actions/filters are defined in the Plugin class)
+    $plugin = new \WPCivi\Jourcoop\Plugin;
+    $plugin->register();
 });

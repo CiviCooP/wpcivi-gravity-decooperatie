@@ -7,7 +7,7 @@ use WPCivi\Shared\Entity\Address;
 use WPCivi\Shared\Entity\Contact as DefaultContact;
 use WPCivi\Shared\Entity\Email;
 use WPCivi\Shared\Entity\Phone;
-use WPCivi\Shared\EntityCollection;
+use WPCivi\Jourcoop\EntityCollection;
 
 /**
  * Class Entity\Contact.
@@ -21,7 +21,7 @@ class Contact extends DefaultContact
      * (This is currently a chain API call, probably less efficient than
      *   first request Membership.get + second request Contact.get with contact_id IN)
      * @param array $params API parameters
-     * @return EntityCollection Collection of Contact entities
+     * @return EntityCollection|self[] Collection of Contact entities
      */
     public static function getMembers($params = []) {
 
@@ -32,8 +32,7 @@ class Contact extends DefaultContact
             ],
             'options' => ['limit' => 0],
         ]);
-        $wpcivi = WPCiviApi::getInstance();
-        $results = $wpcivi->api('Contact', 'get', $params);
+        $results = WPCiviApi::call('Contact', 'get', $params);
 
         $collection = EntityCollection::create('Contact');
         if($results && !empty($results->values)) {

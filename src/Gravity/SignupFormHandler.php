@@ -1,9 +1,11 @@
 <?php
 namespace WPCivi\Jourcoop\Gravity;
 
+use WPCivi\Jourcoop\Entity\Activity;
 use WPCivi\Jourcoop\Entity\Contact;
 use WPCivi\Jourcoop\Entity\Membership;
-use WPCivi\Jourcoop\Entity\Activity;
+use WPCivi\Jourcoop\Gravity\Traits\BackendLinkTrait;
+use WPCivi\Jourcoop\Gravity\Traits\ContactDataTrait;
 use WPCivi\Shared\Gravity\BaseFormHandler;
 
 /**
@@ -13,44 +15,17 @@ use WPCivi\Shared\Gravity\BaseFormHandler;
  */
 class SignupFormHandler extends BaseFormHandler
 {
+
     /**
-     * Implements gform_save_field_value.
-     * Filters field values (there may also be separate form field handlers in separate classes).
-     * @param mixed $value Current value
-     * @param mixed $lead Lead
-     * @param mixed $field Field
-     * @param mixed $form Form
-     * @return mixed Filtered value
+     * Set (pretty) class name
      */
-    public function saveFieldValue($value, $lead, $field, $form)
-    {
-        // Check if handler is enabled
-        if (!$this->handlerIsEnabled($form)) {
-            return $value;
-        }
+    protected $label = 'Signup Form';
 
-        // Check fields based on field label
-        // (Anyone know a better way? Fields don't seem to have internal names)
-        $label = strtolower(preg_replace('/[^a-zA-z0-9]/', '', $field->label));
-
-        // Capitalize postcode / huisnummer / toevoeging / woonplaats / rekeningnr
-        if (in_array($label, ['postcode', 'huisnummer', 'toevoeging', 'woonplaats', 'rekeningnummeriban'])) {
-            $value = strtoupper($value);
-        }
-
-        // Capitalize first letter of voornaam / achternaam (though com.cividesk.normalize should do this too)
-        if (in_array($label, ['voornaam', 'achternaam'])) {
-            $value = ucfirst($value);
-        }
-
-        // Add space to postcode if necessary
-        if ($label == 'postcode' && strlen($value) == 6) {
-            $value = preg_replace('/(?<=[a-z])(?=\d)|(?<=\d)(?=[a-z])/i', ' ', $value);
-        }
-
-        return $value;
-    }
-
+    /**
+     * Traits for contact data normalization and backend integration
+     */
+    use ContactDataTrait;
+    use BackendLinkTrait;
 
     /**
      * Implements hook gform_after_submission.
@@ -64,7 +39,7 @@ class SignupFormHandler extends BaseFormHandler
     {
         // Check if handler is enabled
         if (!$this->handlerIsEnabled($form)) {
-            return true;
+            return $form;
         }
 
         // Get form data
@@ -131,65 +106,4 @@ class SignupFormHandler extends BaseFormHandler
         return $entry;
     }
 
-    /**
-     * Implements hook gform_entry_meta.
-     * Adds CiviCRM contact ID to form listings.
-     * @param array $entry_meta Entry metadata
-     * @param int $form_id Form ID
-     * @return array Entry metadata
-     */
-    public function entryMeta($entry_meta, $form_id)
-    {
-        $entry_meta['wpcivi_contactid'] = [
-            'label'             => 'CiviCRM ID',
-            'is_numeric'        => true,
-            'is_default_column' => true,
-        ];
-        return $entry_meta;
-    }
-
-    /**
-     * Implements hook gform_entries_column.
-     * Adds a link to the CiviCRM contact ID column (quick hack).
-     * @param int $form_id Form ID
-     * @param int $field_id Field ID
-     * @param mixed $value Field value
-     * @param array $entry Entry array
-     * @param string $query_string Query string
-     */
-    public function entriesColumn($form_id, $field_id, $value, $entry, $query_string)
-    {
-        if (!empty($entry['wpcivi_contactid']) && $entry['wpcivi_contactid'] == $value) {
-            echo '(<a href="/wp-admin/admin.php?page=CiviCRM&q=civicrm%2Fcontact%2Fview&reset=1&cid=' . $value . '">View Contact</a>)';
-        }
-    }
-
-    /**
-     * Implements hook gform_entry_detail.
-     * Show status and link to CiviCRM contact, or show the error that occurred.
-     * wr_success contains 'SUCCESS' or 'ERROR: Error Message'.
-     * @param mixed $form Form
-     * @param mixed $entry Entry
-     * @return null
-     */
-    public function entryDetail($form, $entry)
-    {
-        $status = gform_get_meta($entry['id'], 'wpcivi_status');
-        $contact_id = gform_get_meta($entry['id'], 'wpcivi_contactid');
-
-        if (!empty($status)) {
-
-            echo "<div class='postbox'>\n<h3>CiviCRM Integration</h3>\n<div class='inside'>";
-            if ($status == 'SUCCESS') {
-                echo "This entry has been saved and can be deleted in Gravity Forms.<br>\n";
-            } else {
-                echo "This entry could <strong>NOT</strong> be correctly stored in CiviCRM.<br>\n<em>{$status}</em><br>\n";
-            }
-
-            if (!empty($contact_id)) {
-                echo "<a href='/wp-admin/admin.php?page=CiviCRM&q=civicrm%2Fcontact%2Fview&cid={$contact_id}&reset=1'><strong>View CiviCRM contact (id {$contact_id})</strong></a>\n";
-            }
-            echo "</div></div>";
-        }
-    }
 }

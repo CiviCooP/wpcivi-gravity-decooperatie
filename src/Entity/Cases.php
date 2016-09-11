@@ -2,7 +2,7 @@
 namespace WPCivi\Jourcoop\Entity;
 
 use WPCivi\Shared\Entity\Cases as DefaultCases;
-use WPCivi\Shared\EntityCollection;
+use WPCivi\Jourcoop\EntityCollection;
 
 /**
  * Class Entity\Cases (since 'Case' is a PHP reserved word)
