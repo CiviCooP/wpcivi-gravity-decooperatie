@@ -20,14 +20,17 @@ Text Domain: wpcivi
 add_action('plugins_loaded', function () {
 
     if (!class_exists('\WPCivi\Shared\Autoloader')) {
-        throw new \Exception("Plugin error: 'wpcivi_jourcoop' requires 'wpcivi_shared'.");
+        add_action('admin_notices', function() {
+            echo '<div class="error"><p><strong>' . sprintf(_('Plugin error: <em>%1$s</em> not initialised because <em>%2$s</em> is not enabled.'), 'WPCivi Jourcoop', 'WPCivi Shared') . '</strong></p></div>';
+        });
+        return false;
     }
 
     // Register autoloader
     $loader = \WPCivi\Shared\Autoloader::getInstance();
-    $loader->addNamespace('WPCivi\Jourcoop', __DIR__ . '/src/');
+    $loader->addNamespace('WPCivi\\Jourcoop\\', __DIR__ . '/src/');
 
     // Register plugin (actions/filters are defined in the Plugin class)
     $plugin = new \WPCivi\Jourcoop\Plugin;
     $plugin->register();
-});
+}, 102);

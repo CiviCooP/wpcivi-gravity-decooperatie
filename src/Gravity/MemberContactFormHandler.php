@@ -123,9 +123,7 @@ class MemberContactFormHandler extends BaseFormHandler
         // Set local timezone! (WP uses UTC, Civi uses default timezone)
         date_default_timezone_set(ini_get('date.timezone'));
 
-        // TODO Besides handling the form submission, we also have to prefill the fields
-        //// TODO Don't forget to disable CiviRules when migrating just in case!
-        // TODO CIVICRM MEMBER SYNC IS DE BOOSDOENER QUA AJAX REQUESTS!!!!!!!!!11
+        // TODO Niet meer rare nachtelijke opmerkingen in willekeurige PHP-files zetten
 
         // Start submission to CiviCRM
         try {

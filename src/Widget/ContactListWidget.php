@@ -82,7 +82,7 @@ class ContactListWidget extends BaseCiviWidget
 
             <?php else: ?>
 
-                <h3><?php __e('No contacts found.', 'wpcivi-jourcoop'); ?></h3>
+                <h3><?php _e('No contacts found.', 'wpcivi-jourcoop'); ?></h3>
 
             <?php endif; ?>
         </div>

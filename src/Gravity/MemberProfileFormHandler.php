@@ -46,7 +46,6 @@ class MemberProfileFormHandler extends BaseFormHandler
         $contact->loadCurrentWPUser();
         $websites = Website::getWebsitesForContact($contact->id);
 //        $websites = [];
-        print_r($websites);
 
         // Walk fields and add data
         foreach($form['fields'] as &$field) {
@@ -56,7 +55,8 @@ class MemberProfileFormHandler extends BaseFormHandler
                     $field->defaultValue = $contact->job_title;
                     break;
                 case 'expertise':
-                    $field->defaultValue = implode(',',$contact->getCustom('Expertise'));
+                    $expertise = $contact->getCustom('Expertise');
+                    $field->defaultValue = (is_array($expertise) ? implode(',',$contact->getCustom('Expertise')) : '');
                     break;
                 case 'werkervaring';
                     $field->defaultValue = $contact->getCustom('Werkervaring');

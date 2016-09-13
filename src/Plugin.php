@@ -16,26 +16,43 @@ use WPCivi\Shared\BasePlugin;
 class Plugin extends BasePlugin
 {
 
+    /**
+     * Load plugin classes and register hooks
+     */
     public function register()
     {
 
-        /* ----- GRAVITY FORM HANDLERS (werkt niet met gform_loaded?) ----- */
-
         $this->addAction('init', function () {
+
+            /* --- INIT GRAVITY FORM HANDLERS --- */
+            // (Used the gform_loaded hook before, but that didn't always work)
 
             new SignupFormHandler;
-            // new OldSignupFormHandler;
-
             new MemberContactFormHandler;
-             new MemberProfileFormHandler;
-        });
+            new MemberProfileFormHandler;
 
-        /* ----- CUSTOM ACF / WIDGET / SHORTCODE / ETC BLOCKS ----- */
-
-        $this->addAction('init', function () {
+            /* --- INIT CUSTOM ACF / WIDGET / ETC BLOCKS --- */
 
             new ContactListWidget;
             new JobListWidget;
+
+            /* --- ADD CIVICRM TO ADMIN BAR --- */
+
+            $this->addToAdminBar();
         });
+    }
+
+    private function addToAdminBar()
+    {
+        $this->addAction('wp_before_admin_bar_render', function() {
+            /** @var \WP_Admin_Bar $wp_admin_bar */
+            global $wp_admin_bar;
+            $wp_admin_bar->add_node([
+                'parent' => '',
+                'id'    => 'jourcoop-admin-civicrm',
+                'title' => 'CiviCRM',
+                'href'  => '/wp-admin/admin.php?page=CiviCRM',
+            ]);
+        }, 1);
     }
 }
