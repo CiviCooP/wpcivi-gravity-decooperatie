@@ -17,20 +17,27 @@ Text Domain: wpcivi
  * @package WPCivi\Jourcoop
  */
 
+
+/* --- REGISTER WITH WPCIVI_SHARED AUTOLOADER --- */
+
 add_action('plugins_loaded', function () {
 
-    if (!class_exists('\WPCivi\Shared\Autoloader')) {
-        add_action('admin_notices', function() {
-            echo '<div class="error"><p><strong>' . sprintf(_('Plugin error: <em>%1$s</em> not initialised because <em>%2$s</em> is not enabled.'), 'WPCivi Jourcoop', 'WPCivi Shared') . '</strong></p></div>';
-        });
-        return false;
-    }
+  if (!class_exists('\WPCivi\Shared\Autoloader')) {
+    add_action('admin_notices', function () {
+      echo '<div class="error"><p><strong>' . sprintf(_('Plugin error: <em>%1$s</em> not initialised because <em>%2$s</em> is not enabled.'), 'WPCivi Jourcoop', 'WPCivi Shared') . '</strong></p></div>';
+    });
+    return false;
+  }
 
-    // Register autoloader
-    $loader = \WPCivi\Shared\Autoloader::getInstance();
-    $loader->addNamespace('WPCivi\\Jourcoop\\', __DIR__ . '/src/');
+  $loader = \WPCivi\Shared\Autoloader::getInstance();
+  $loader->addNamespace('WPCivi\\Jourcoop\\', __DIR__ . '/src/');
+}, 52);
 
-    // Register plugin (actions/filters are defined in the Plugin class)
-    $plugin = new \WPCivi\Jourcoop\Plugin;
-    $plugin->register();
-}, 102);
+
+/* --- REGISTER PLUGIN ACTIONS / FILTERS (defined in the Plugin class) --- */
+/* TODO: Check all custom CiviCRM integration code for efficiency/performance, it probably could be better... */
+
+add_action('init', function () {
+  $plugin = new \WPCivi\Jourcoop\Plugin;
+  $plugin->register();
+}, 52);

@@ -21,37 +21,33 @@ class Plugin extends BasePlugin
      */
     public function register()
     {
+        /* --- INIT GRAVITY FORM HANDLERS --- */
+        // (Used the gform_loaded hook before, but that didn't always work)
 
-        $this->addAction('init', function () {
+        new SignupFormHandler;
+        new MemberContactFormHandler;
+        new MemberProfileFormHandler;
 
-            /* --- INIT GRAVITY FORM HANDLERS --- */
-            // (Used the gform_loaded hook before, but that didn't always work)
+        /* --- INIT CUSTOM ACF / WIDGET / ETC BLOCKS --- */
 
-            new SignupFormHandler;
-            new MemberContactFormHandler;
-            new MemberProfileFormHandler;
+        new ContactListWidget;
+        new JobListWidget;
 
-            /* --- INIT CUSTOM ACF / WIDGET / ETC BLOCKS --- */
+        /* --- ADD CIVICRM TO ADMIN BAR --- */
 
-            new ContactListWidget;
-            new JobListWidget;
-
-            /* --- ADD CIVICRM TO ADMIN BAR --- */
-
-            $this->addToAdminBar();
-        });
+        $this->addToAdminBar();
     }
 
     private function addToAdminBar()
     {
-        $this->addAction('wp_before_admin_bar_render', function() {
+        $this->addAction('wp_before_admin_bar_render', function () {
             /** @var \WP_Admin_Bar $wp_admin_bar */
             global $wp_admin_bar;
             $wp_admin_bar->add_node([
                 'parent' => '',
-                'id'    => 'jourcoop-admin-civicrm',
-                'title' => 'CiviCRM',
-                'href'  => '/wp-admin/admin.php?page=CiviCRM',
+                'id'     => 'jourcoop-admin-civicrm',
+                'title'  => 'CiviCRM',
+                'href'   => '/wp-admin/admin.php?page=CiviCRM',
             ]);
         }, 1);
     }

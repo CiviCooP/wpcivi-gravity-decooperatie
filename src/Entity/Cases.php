@@ -32,7 +32,7 @@ class Cases extends DefaultCases
     {
         $getFields = $this->getFields('get');
         if(isset($getFields['Service'])) {
-            return self::getCaseOptions($getFields['Service']->api_field_name);
+            return static::getCaseOptions($getFields['Service']->api_field_name);
         }
         return null;
     }
@@ -44,7 +44,7 @@ class Cases extends DefaultCases
     public function getCaseServiceName()
     {
         $service_id = $this->getCustom('Service');
-        $services = self::getCaseServiceOptions();
+        $services = static::getCaseServiceOptions();
         if(!empty($services) && array_key_exists($service_id, $services)) {
             return $services[$service_id];
         }

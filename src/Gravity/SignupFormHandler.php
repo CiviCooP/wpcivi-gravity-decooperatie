@@ -4,7 +4,6 @@ namespace WPCivi\Jourcoop\Gravity;
 use WPCivi\Jourcoop\Entity\Activity;
 use WPCivi\Jourcoop\Entity\Contact;
 use WPCivi\Jourcoop\Entity\Membership;
-use WPCivi\Jourcoop\Gravity\Traits\BackendLinkTrait;
 use WPCivi\Jourcoop\Gravity\Traits\ContactDataTrait;
 use WPCivi\Shared\Gravity\BaseFormHandler;
 
@@ -22,10 +21,9 @@ class SignupFormHandler extends BaseFormHandler
     protected $label = 'Signup Form';
 
     /**
-     * Traits for contact data normalization and backend integration
+     * Trait for contact data normalization
      */
     use ContactDataTrait;
-    use BackendLinkTrait;
 
     /**
      * Implements hook gform_after_submission.
@@ -39,15 +37,12 @@ class SignupFormHandler extends BaseFormHandler
     {
         // Check if handler is enabled
         if (!$this->handlerIsEnabled($form)) {
-            return $form;
+            return $entry;
         }
 
         // Get form data
         $data = $this->getDataKVArray($entry, $form);
         $contact = null;
-
-        // Set local timezone! (WP uses UTC, Civi uses default timezone)
-        date_default_timezone_set(ini_get('date.timezone'));
 
         // Start submission to CiviCRM
         try {
@@ -57,14 +52,14 @@ class SignupFormHandler extends BaseFormHandler
 
             // Add membership (with status Pending by default and without contributions)
             $membershipType = ($data['benjelidvandenvj'] == true ? 'Lid (NVJ)' : 'Lid');
-            $membership = Membership::create([
+            Membership::create([
                 'contact_id' => $contact->id,
                 'membership_type_id' => $membershipType,
                 ]);
 
             // Add activity
             Activity::createActivity($contact->id, "WPCivi_SignupForm_Result",
-                "Contact and membership added by SignupFormHandler", "Gravity Forms Entry ID: {$entry['id']}");
+                "Contact and membership added by SignupFormHandler", "Gravity Forms Entry ID: " . (int)$entry['id']);
 
             // Add status and contact id to gform meta data
             gform_update_meta($entry['id'], 'wpcivi_status', 'SUCCESS', $form['id']);
@@ -83,7 +78,7 @@ class SignupFormHandler extends BaseFormHandler
             gform_update_meta($entry['id'], 'wpcivi_status', 'ERROR (' . $e->getMessage() . ')', $form['id']);
 
             // If we were able to create a contact...
-            if (is_object($contact) && isset($contact->id)) {
+            if (is_object($contact) && !empty($contact->id)) {
 
                 // Add contact id to gform meta data
                 gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->id, $form['id']);
@@ -98,9 +93,6 @@ class SignupFormHandler extends BaseFormHandler
                 }
             }
         }
-
-        // Revert timezone to UTC for WP
-        date_default_timezone_set('UTC');
 
         // Return entry
         return $entry;

@@ -75,9 +75,6 @@ class OldSignupFormHandler extends BaseFormHandler
         // Get form data
         $data = $this->getDataKVArray($entry, $form);
 
-        // Set local timezone! (WP uses UTC, Civi uses default timezone)
-        date_default_timezone_set(ini_get('date.timezone'));
-
         // Start submission to CiviCRM
         $wpcivi = WPCiviApi::getInstance();
         $contact = null;
@@ -201,9 +198,6 @@ class OldSignupFormHandler extends BaseFormHandler
                 }
             }
         }
-
-        // Revert timezone to UTC for WP
-        date_default_timezone_set('UTC');
 
         // Return entry
         return $entry;

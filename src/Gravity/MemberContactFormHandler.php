@@ -4,7 +4,7 @@ namespace WPCivi\Jourcoop\Gravity;
 use WPCivi\Jourcoop\Entity\Activity;
 use WPCivi\Jourcoop\Entity\Contact;
 use WPCivi\Jourcoop\Gravity\Traits\ContactDataTrait;
-use WPCivi\Jourcoop\Gravity\Traits\BackendLinkTrait;
+use WPCivi\Jourcoop\Plugin;
 use WPCivi\Shared\Gravity\BaseFormHandler;
 
 /**
@@ -21,10 +21,9 @@ class MemberContactFormHandler extends BaseFormHandler
     protected $label = 'Member Contact Form';
 
     /**
-     * Traits for contact data normalization and backend integration
+     * Trait for contact data normalization
      */
     use ContactDataTrait;
-    use BackendLinkTrait;
 
     /**
      * Implements hook gform_pre_render, as well as gform_pre_validation and gform_admin_pre_render to have
@@ -33,7 +32,7 @@ class MemberContactFormHandler extends BaseFormHandler
      * @param mixed $form Form
      * @param bool $ajax Is Ajax
      * @param mixed $field_values Field values(?)
-     * @return bool
+     * @return mixed Form
      */
     public function preRender($form, $ajax = false, $field_values = [])
     {
@@ -44,45 +43,48 @@ class MemberContactFormHandler extends BaseFormHandler
 
         // Get current CiviCRM contact
         $contact = new Contact;
-        $contact->loadCurrentWPUser();
-        $contact->loadFullAddressData();
+        try {
+            $contact->loadCurrentWPUser();
+        } catch (\Exception $e) {
+            Plugin::exitOnException($e);
+        }
 
         // Walk fields and add data
-        foreach($form['fields'] as &$field) {
+        foreach ($form['fields'] as &$field) {
             $label = strtolower(preg_replace('/[^a-zA-z0-9]/', '', $field->label));
-            switch($label) {
+            switch ($label) {
                 case 'voornaam':
-                    $field->defaultValue = $contact->first_name;
+                    $field->defaultValue = $contact->getValue('first_name');
                     break;
                 case 'tussenvoegsel':
-                    $field->defaultValue = $contact->middle_name;
+                    $field->defaultValue = $contact->getValue('middle_name');
                     break;
                 case 'achternaam';
-                    $field->defaultValue = $contact->last_name;
+                    $field->defaultValue = $contact->getValue('last_name');
                     break;
                 case 'straat':
-                    $field->defaultValue = $contact->street_name;
+                    $field->defaultValue = $contact->getAddress()->getValue('street_name');
                     break;
                 case 'huisnummer':
-                    $field->defaultValue = $contact->street_number;
+                    $field->defaultValue = $contact->getAddress()->getValue('street_number');
                     break;
                 case 'toevoeging':
-                    $field->defaultValue = $contact->street_unit;
+                    $field->defaultValue = $contact->getAddress()->getValue('street_unit');
                     break;
                 case 'postcode':
-                    $field->defaultValue = $contact->postal_code;
+                    $field->defaultValue = $contact->getAddress()->getValue('postal_code');
                     break;
                 case 'woonplaats':
-                    $field->defaultValue = $contact->city;
+                    $field->defaultValue = $contact->getAddress()->getValue('city');
                     break;
                 case 'telefoon':
-                    $field->defaultValue = $contact->phone_phone;
+                    $field->defaultValue = $contact->getPhone()->getValue('phone');
                     break;
                 case 'mobiel':
-                    $field->defaultValue = $contact->phone_mobile;
+                    $field->defaultValue = $contact->getMobile()->getValue('phone');
                     break;
                 case 'emailadres':
-                    $field->defaultValue = $contact->email;
+                    $field->defaultValue = $contact->getEmail()->getValue('email');
                     break;
                 case 'rekeningnummeriban':
                     $field->defaultValue = $contact->getCustom('Bank_Account_IBAN');
@@ -113,72 +115,116 @@ class MemberContactFormHandler extends BaseFormHandler
     {
         // Check if handler is enabled
         if (!$this->handlerIsEnabled($form)) {
-            return $form;
+            return $entry;
         }
 
         // Get form data
         $data = $this->getDataKVArray($entry, $form);
-        $contact = null;
 
-        // Set local timezone! (WP uses UTC, Civi uses default timezone)
-        date_default_timezone_set(ini_get('date.timezone'));
-
-        // TODO Niet meer rare nachtelijke opmerkingen in willekeurige PHP-files zetten
+        // Get current CiviCRM contact
+        $contact = new Contact;
+        try {
+            $contact->loadCurrentWPUser();
+        } catch (\Exception $e) {
+            Plugin::exitOnException($e);
+        }
 
         // Start submission to CiviCRM
         try {
+            foreach ($data as $field => $value) {
+                switch ($field) {
+                    case 'voornaam':
+                        $contact->setValue('first_name', $value);
+                        break;
+                    case 'tussenvoegsel':
+                        $contact->setValue('middle_name', $value);
+                        break;
+                    case 'achternaam';
+                        $contact->setValue('last_name', $value);
+                        break;
+                    case 'straat':
+                        // Mooier zou hier natuurlijk zijn: $contact->getAddress()->setStreetName('');
+                        $contact->getAddress()->setValue('street_name', $value);
+                        break;
+                    case 'huisnummer':
+                        $contact->getAddress()->setValue('street_number', $value);
+                        break;
+                    case 'toevoeging':
+                        $contact->getAddress()->setValue('street_unit', $value);
+                        break;
+                    case 'postcode':
+                        $contact->getAddress()->setValue('postal_code', $value);
+                        break;
+                    case 'woonplaats':
+                        $contact->getAddress()->setValue('city', $value);
+                        break;
+                    case 'telefoon':
+                        $contact->getPhone()->setValue('phone', $value);
+                        break;
+                    case 'mobiel':
+                        $contact->getMobile()->setValue('phone', $value);
+                        break;
+                    case 'emailadres':
+                        $contact->getEmail()->setValue('email', $value);
+                        break;
+                    case 'rekeningnummeriban':
+                        $contact->setCustom('Bank_Account_IBAN', $value);
+                        break;
+                    case 'kvknummer':
+                        $contact->setCustom('KvK_No', $value);
+                        break;
+                    case 'btwnummer':
+                        $contact->setCustom('BTW_No', $value);
+                        break;
+                    default:
+                        break;
+                }
+            }
 
-            // TODO!
+            // Try to save form data
+            if (!empty($contact->getAddress()->getId()) || !empty($contact->getAddress()->getValue('street_name'))) {
+                $contact->getAddress()->save();
+            }
+            if (!empty($contact->getEmail()->getValue('email'))) {
+                $contact->getEmail()->save();
+            }
+            if (!empty($contact->getPhone()->getValue('phone'))) {
+                $contact->getPhone()->save();
+            }
+            if (!empty($contact->getMobile()->getValue('phone'))) {
+                $contact->getMobile()->save();
+            }
+            $contact->save();
 
-//            // Add contact including address / phone / email data
-//            $contact = Contact::createContact($data);
-//
-//            // Add membership (with status Pending by default and without contributions)
-//            $membershipType = ($data['benjelidvandenvj'] == true ? 'Lid (NVJ)' : 'Lid');
-//            $membership = Membership::create([
-//                'contact_id'         => $contact->id,
-//                'membership_type_id' => $membershipType,
-//            ]);
-//
-//            // Add activity
-//            Activity::createActivity($contact->id, "WPCivi_SignupForm_Result",
-//                "Contact and membership added by SignupFormHandler", "Gravity Forms Entry ID: {$entry['id']}");
-//
-//            // Add status and contact id to gform meta data
-//            gform_update_meta($entry['id'], 'wpcivi_status', 'SUCCESS', $form['id']);
-//            gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->id, $form['id']);
+            // Add activity
+            Activity::createActivity($contact->getId(), "WPCivi_MemberContactForm_Result",
+                "Contact info updated by MemberContactFormHandler", "Gravity Forms Entry ID: {$entry['id']}");
+
+            // Add status and contact id to gform meta data
+            gform_update_meta($entry['id'], 'wpcivi_status', 'SUCCESS', $form['id']);
+            gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->getId(), $form['id']);
 
         } catch (\Exception $e) {
 
             // Exception handling for development
             if (WP_DEBUG === true) {
-                echo "<strong>Gravity Form Handler error, exiting because WP_DEBUG is enabled:</strong><br />\n";
-                throw new \Exception($e->getMessage(), $e->getCode(), $e);
-                exit;
+                Plugin::exitOnException($e);
             }
 
             // Exception handling for production --> Add error status to gform meta data, but show nothing to user
             gform_update_meta($entry['id'], 'wpcivi_status', 'ERROR (' . $e->getMessage() . ')', $form['id']);
 
-            // If we were able to create a contact...
-            if (is_object($contact) && isset($contact->id)) {
+            // If we were able to create a contact, add contact id and try to create another activity
+            if (is_object($contact) && !empty($contact->getId())) {
+                gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->getId(), $form['id']);
 
-                // Add contact id to gform meta data
-                gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->id, $form['id']);
-
-                // Try to create an activity
                 try {
-                    Activity::createActivity($contact->id, "WPCivi_MemberContactForm_Result",
+                    Activity::createActivity($contact->getId(), "WPCivi_MemberContactForm_Result",
                         "An error occurred while handling this form submission", "Error: " . $e->getMessage() . "<br>
                          Gravity Forms Entry ID: " . $entry['id'] . ".", "Cancelled");
-                } catch (\Exception $e) {
-                    // We won't create an activity about failing to create an activity after failing to create a contact.
-                }
+                } catch (\Exception $e) {}
             }
         }
-
-        // Revert timezone to UTC for WP
-        date_default_timezone_set('UTC');
 
         // Return entry
         return $entry;

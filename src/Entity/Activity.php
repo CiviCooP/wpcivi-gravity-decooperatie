@@ -1,6 +1,7 @@
 <?php
 namespace WPCivi\Jourcoop\Entity;
 
+use WPCivi\Shared\Civi\WPCiviApi;
 use WPCivi\Shared\Civi\WPCiviException;
 use WPCivi\Shared\Entity\Activity as DefaultActivity;
 
@@ -18,18 +19,18 @@ class Activity extends DefaultActivity
      * @param $details
      * @param string $status_id
      * @param int $source_contact_id
-     * @return self Activity Entity
+     * @return static Activity Entity
      * @throws WPCiviException
      */
     public static function createActivity($target_contact_id, $activity_type_id, $subject, $details,
                                           $status_id = 'Completed', $source_contact_id = null)
     {
-        $activity = new self;
+        $activity = new static;
         $activity->setArray([
             'activity_type_id'  => $activity_type_id,
             'status_id'         => $status_id,
-            'target_contact_id' => $target_contact_id,
-            'source_contact_id' => (isset($source_contact_id) ? $source_contact_id : $activity->getSystemContactId()),
+            'target_contact_id' => (int) $target_contact_id,
+            'source_contact_id' => (int) (!empty($source_contact_id) ? $source_contact_id : $activity->getSystemContactId()),
             'subject'           => $subject,
             'details'           => $details,
         ]);
@@ -43,10 +44,10 @@ class Activity extends DefaultActivity
      */
     public function getSystemContactId()
     {
-            try {
-                return $this->wpcivi->api('Contact', 'getvalue', ['display_name' => 'CiviCRM System User', 'return' => 'id']);
-            } catch(\CiviCRM_API3_Exception $e) {
-                return 1;
-            }
+        try {
+            return WPCiviApi::call('Contact', 'getvalue', ['email' => 'no-reply@decooperatie.org', 'return' => 'id']);
+        } catch(\CiviCRM_API3_Exception $e) {
+            return 1;
+        }
     }
 }

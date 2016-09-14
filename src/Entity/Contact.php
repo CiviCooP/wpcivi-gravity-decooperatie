@@ -28,7 +28,7 @@ class Contact extends DefaultContact
         $params = array_merge($params, [
             'api.Membership.get' => [
                 'membership_type_id' => ["Lid", "Lid (NVJ)"],
-                'status_id'          => ["New", "Current", "Grace"],
+                'status_id'          => ["New", "Current", "Grace", "Pending"], // Include Pdn
             ],
             'options' => ['limit' => 0],
         ]);
@@ -38,7 +38,7 @@ class Contact extends DefaultContact
         if($results && !empty($results->values)) {
             foreach($results->values as $r) {
                 if($r->{'api.Membership.get'}->count > 0) {
-                    $entity = new self;
+                    $entity = new static;
                     unset($r->{'api.Membership.get'});
                     $entity->setArray($r);
                     $collection->add($entity);
@@ -59,7 +59,7 @@ class Contact extends DefaultContact
     public static function createContact($params = []) {
 
         // Add new contact
-        $contact = self::create([
+        $contact = static::create([
             'contact_type' => 'Individual',
             'first_name'   => $params['voornaam'],
             'middle_name'  => $params['tussenvoegsel'],
@@ -85,10 +85,10 @@ class Contact extends DefaultContact
             Phone::createPhone($contact->id, $params['telefoon'], 'Phone');
         }
         if(!empty($params['mobiel'])) {
-            Phone::createPhone($contact->id, $params['telefoon'], 'Mobile');
+            Phone::createPhone($contact->id, $params['mobiel'], 'Mobile');
         }
         if (!empty($params['emailadres'])) {
-            Email::createEmail($contact->id, $params['email']);
+            Email::createEmail($contact->id, $params['emailadres']);
         }
 
         // Add custom data that the form likely supplied
