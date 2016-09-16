@@ -49,7 +49,7 @@ class MemberProfileFormHandler extends BaseFormHandler
         foreach($form['fields'] as &$field) {
             $label = strtolower(preg_replace('/[^a-zA-z0-9]/', '', $field->label));
             switch($label) {
-                case 'functie':
+                case 'specialisme':
                     $field->defaultValue = $contact->job_title;
                     break;
                 case 'expertise':
@@ -120,7 +120,7 @@ class MemberProfileFormHandler extends BaseFormHandler
         try {
             foreach ($data as $field => $value) {
                 switch ($field) {
-                    case 'functie':
+                    case 'specialisme':
                         $contact->setValue('job_title', $value);
                         break;
                     case 'expertise':

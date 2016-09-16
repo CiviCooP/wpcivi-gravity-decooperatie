@@ -145,6 +145,9 @@ class MemberContactFormHandler extends BaseFormHandler
                     case 'straat':
                         // Mooier zou hier natuurlijk zijn: $contact->getAddress()->setStreetName('');
                         $contact->getAddress()->setValue('street_name', $value);
+                        // TODO Toegevoegd door Gyurka, zóu niet nodig moeten zijn, nog debuggen
+                        $contact->getAddress()->setValue('contact_id', $contact->id);
+                        $contact->getAddress()->setValue('location_type_id', 'Work');
                         break;
                     case 'huisnummer':
                         $contact->getAddress()->setValue('street_number', $value);

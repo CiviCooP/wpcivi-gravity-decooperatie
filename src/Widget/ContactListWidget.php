@@ -32,7 +32,6 @@ class ContactListWidget extends BaseCiviWidget
         $contacts = Contact::getMembers();
         ?>
 
-        <div class="wpcivi-jourcoop-contactlist members">
             <?php if (!empty($contacts) && count($contacts) > 0):
                 foreach ($contacts as $c):
                     $slug = $c->getSlug();
@@ -44,6 +43,7 @@ class ContactListWidget extends BaseCiviWidget
                         </a>
                         <div class="member_content">
                             <h4><a href="#<?= $slug; ?>" class="open-popup"><?= $c->display_name; ?></a></h4>
+                            <h3><?= $c->job_title; ?></h3>
                         </div>
                     </div>
                     <div class="member member_popup white-popup mfp-hide" id="<?= $slug; ?>">
@@ -53,7 +53,6 @@ class ContactListWidget extends BaseCiviWidget
 
                         <h4><?= $c->display_name; ?></h4>
                         <h3><?= $c->job_title; ?></h3>
-
                         <p>
                             <?php if(!empty($c->phone)): ?><em>T:</em> <?= $c->phone; ?><br/><?php endif; ?>
                             <?php if(!empty($c->email)): ?><em>E:</em> <a href="mailto:<?= $c->email; ?>"><?= $c['email']; ?></a><br/><?php endif; ?>
@@ -85,7 +84,6 @@ class ContactListWidget extends BaseCiviWidget
                 <h3><?php _e('No contacts found.', 'wpcivi-jourcoop'); ?></h3>
 
             <?php endif; ?>
-        </div>
 
         <?php
     }

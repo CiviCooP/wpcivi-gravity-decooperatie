@@ -1,13 +1,12 @@
 <?php
 namespace WPCivi\Jourcoop\Entity;
 
-use WPCivi\Shared\Civi\WPCiviApi;
+use WPCivi\Jourcoop\EntityCollection;
 use WPCivi\Shared\Civi\WPCiviException;
 use WPCivi\Shared\Entity\Address;
 use WPCivi\Shared\Entity\Contact as DefaultContact;
 use WPCivi\Shared\Entity\Email;
 use WPCivi\Shared\Entity\Phone;
-use WPCivi\Jourcoop\EntityCollection;
 
 /**
  * Class Entity\Contact.
@@ -17,36 +16,53 @@ class Contact extends DefaultContact
 {
 
     /**
-     * Get contacts that are active members
-     * (This is currently a chain API call, probably less efficient than
-     *   first request Membership.get + second request Contact.get with contact_id IN)
-     * @param array $params API parameters
+     * Get contacts that are active members.
+     * Returns an array of Contact objects, that optionally have a 'membership' which contains
+     * the _first_ active membership for a contact if $mparams['include_membership'] is set.
+     * @param array $mparams Membership API parameters
      * @return EntityCollection|self[] Collection of Contact entities
      */
-    public static function getMembers($params = []) {
+    public static function getMembers($mparams = [])
+    {
+        /*
+         * NOTE: A chain API call wasn't very efficient here (n+1)?
+         * Replaced by a Membership.get and a Contact.get with contact_id IN (?)
+         * The CiviCRM 4.7 join API works well ('return' => 'contact_id.first_name') but doesn't
+         * seem to include an option to return _all_ fields for the contact.
+         */
 
-        $params = array_merge($params, [
-            'api.Membership.get' => [
-                'membership_type_id' => ["Lid", "Lid (NVJ)"],
-                'status_id'          => ["New", "Current", "Grace", "Pending"], // Include Pdn
-            ],
-            'options' => ['limit' => 0],
+        if (!isset($mparams['membership_type_id'])) {
+            $mparams['membership_type_id'] = ['IN' => ['Lid', 'Lid (NVJ)']];
+        }
+        if (!isset($mparams['status_id'])) {
+            $mparams['status_id'] = ['IN' => ['New', 'Current', 'Grace']]; // + Pending for now? -> no
+        }
+        if (!isset($mparams['include_membership'])) {
+            $mparams['return'] = 'contact_id';
+        }
+        $mresults = EntityCollection::get('Membership', $mparams);
+
+        $contact_ids = [];
+        $memberships = [];
+        foreach ($mresults as $r) {
+            if ($mparams['include_membership']) {
+                $memberships[$r->contact_id] = $r;
+            }
+            $contact_ids[] = $r->contact_id; // Replace with array_column on PHP >= 7
+        }
+
+        $contacts = EntityCollection::get('Contact', [
+            'contact_id' => ['IN' => $contact_ids],
         ]);
-        $results = WPCiviApi::call('Contact', 'get', $params);
-
-        $collection = EntityCollection::create('Contact');
-        if($results && !empty($results->values)) {
-            foreach($results->values as $r) {
-                if($r->{'api.Membership.get'}->count > 0) {
-                    $entity = new static;
-                    unset($r->{'api.Membership.get'});
-                    $entity->setArray($r);
-                    $collection->add($entity);
+        if ($mparams['include_membership'] && count($contacts) > 0) {
+            foreach ($contacts as $contact) {
+                if (array_key_exists($contact->id, $memberships)) {
+                    $contact->membership = $memberships[$contact->id];
                 }
             }
         }
 
-        return $collection;
+        return $contacts;
     }
 
     /**
@@ -56,7 +72,8 @@ class Contact extends DefaultContact
      * @return self Contact entity
      * @throws WPCiviException
      */
-    public static function createContact($params = []) {
+    public static function createContact($params = [])
+    {
 
         // Add new contact
         $contact = static::create([
@@ -71,20 +88,20 @@ class Contact extends DefaultContact
         // Add address
         if (!empty($data['postcode']) && !empty($data['huisnummer'])) {
             Address::create('Address', [
-                'contact_id'       => $contact->id,
-                'street_name'      => $data['straat'],
-                'street_number'    => $data['huisnummer'],
-                'street_unit'      => $data['toevoeging'],
-                'postal_code'      => $data['postcode'],
-                'city'             => $data['woonplaats'],
+                'contact_id'    => $contact->id,
+                'street_name'   => $data['straat'],
+                'street_number' => $data['huisnummer'],
+                'street_unit'   => $data['toevoeging'],
+                'postal_code'   => $data['postcode'],
+                'city'          => $data['woonplaats'],
             ]);
         }
 
         // Add phone numbers and email address
-        if(!empty($params['telefoon'])) {
+        if (!empty($params['telefoon'])) {
             Phone::createPhone($contact->id, $params['telefoon'], 'Phone');
         }
-        if(!empty($params['mobiel'])) {
+        if (!empty($params['mobiel'])) {
             Phone::createPhone($contact->id, $params['mobiel'], 'Mobile');
         }
         if (!empty($params['emailadres'])) {
@@ -95,7 +112,7 @@ class Contact extends DefaultContact
         if (!empty($params['rekeningnummeriban'])) {
             $contact->setCustom('Bank_Account_IBAN', $params['rekeningnummeriban']);
         }
-        if(!empty($params['benjelidvandenvj'])) {
+        if (!empty($params['benjelidvandenvj'])) {
             $contact->setCustom('NVJ_Member', $params['benjelidvandenvj']);
         }
 
@@ -108,8 +125,9 @@ class Contact extends DefaultContact
      * Get active memberships for the current contact
      * @return EntityCollection Collection of active memberships
      */
-    public function getActiveMemberships() {
-        if(!isset($this->memberships)) {
+    public function getActiveMemberships()
+    {
+        if (!isset($this->memberships)) {
             $this->memberships = Membership::getActiveMemberships($this->id);
         }
         return $this->memberships;
