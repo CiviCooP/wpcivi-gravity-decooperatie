@@ -86,14 +86,16 @@ class Contact extends DefaultContact
         ]);
 
         // Add address
-        if (!empty($data['postcode']) && !empty($data['huisnummer'])) {
-            Address::create('Address', [
+        // Fixed var name error + added country (always NL for now) to prevent PCDB issues
+        if (!empty($params['postcode']) && !empty($params['huisnummer'])) {
+            Address::create([
                 'contact_id'    => $contact->id,
-                'street_name'   => $data['straat'],
-                'street_number' => $data['huisnummer'],
-                'street_unit'   => $data['toevoeging'],
-                'postal_code'   => $data['postcode'],
-                'city'          => $data['woonplaats'],
+                'street_name'   => $params['straat'],
+                'street_number' => $params['huisnummer'],
+                'street_unit'   => $params['toevoeging'],
+                'postal_code'   => $params['postcode'],
+                'city'          => $params['woonplaats'],
+                'country_id'    => 'NL',
             ]);
         }
 

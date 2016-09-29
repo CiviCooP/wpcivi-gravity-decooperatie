@@ -133,23 +133,29 @@ class MemberProfileFormHandler extends BaseFormHandler
                         $contact->setCustom('Werkplekvoorkeur', $value);
                         break;
                     case 'website':
+                        $value = $this->addhttp($value);
                         $websites['Work'] = $value;
                         break;
                     case 'linkedinprofiel':
+                        $value = $this->addhttp($value);
                         $websites['LinkedIn'] = $value;
                         break;
                     case 'twitterprofiel':
+                        $value = $this->addhttp($value);
                         $websites['Twitter'] = $value;
                         break;
                     case 'facebookprofiel':
+                        $value = $this->addhttp($value);
                         $websites['Facebook'] = $value;
                         break;
                     case 'instagramprofiel':
+                        $value = $this->addhttp($value);
                         $websites['Instagram'] = $value;
                         break;
-                    case 'googleprofiel':
+                    /* case 'googleprofiel':
+                        $value = $this->addhttp($value);
                         $websites['Google_'] = $value;
-                        break;
+                        break; */
                     default:
                         break;
                 }
@@ -191,6 +197,18 @@ class MemberProfileFormHandler extends BaseFormHandler
 
         // Return entry
         return $entry;
+    }
+
+    /**
+     * Add HTTP to URL if necessary
+     * @param string $url URL
+     * @return string URL
+     */
+    private function addhttp($url) {
+        if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
+            $url = "http://" . $url;
+        }
+        return $url;
     }
 
 }

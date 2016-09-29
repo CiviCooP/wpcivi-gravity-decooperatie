@@ -30,8 +30,9 @@ class ContactListWidget extends BaseCiviWidget
     {
         /** @var Contact[] $contacts */
         $contacts = Contact::getMembers();
+        
         ?>
-
+            
             <?php if (!empty($contacts) && count($contacts) > 0):
                 foreach ($contacts as $c):
                     $slug = $c->getSlug();
@@ -87,4 +88,5 @@ class ContactListWidget extends BaseCiviWidget
 
         <?php
     }
+
 }
