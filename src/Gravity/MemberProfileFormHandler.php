@@ -152,10 +152,10 @@ class MemberProfileFormHandler extends BaseFormHandler
                         $value = $this->addhttp($value);
                         $websites['Instagram'] = $value;
                         break;
-                    /* case 'googleprofiel':
+                    case 'googleprofiel':
                         $value = $this->addhttp($value);
                         $websites['Google_'] = $value;
-                        break; */
+                        break;
                     default:
                         break;
                 }
@@ -199,12 +199,7 @@ class MemberProfileFormHandler extends BaseFormHandler
         return $entry;
     }
 
-    /**
-     * Add HTTP to URL if necessary
-     * @param string $url URL
-     * @return string URL
-     */
-    private function addhttp($url) {
+    function addhttp($url) {
         if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
             $url = "http://" . $url;
         }

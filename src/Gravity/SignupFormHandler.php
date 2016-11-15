@@ -50,12 +50,24 @@ class SignupFormHandler extends BaseFormHandler
             // Add contact including address / phone / email data
             $contact = Contact::createContact($data);
 
-            // Add membership (with status Pending by default and without contributions)
-            $membershipType = ($data['benjelidvandenvj'] == true ? 'Lid (NVJ)' : 'Lid');
+            // Add membership - membership type depends on 'Ik word' select box on form.
+            // Membership is added with status Pending by default and without contributions.
+            switch (strtolower($data['ikword'])) {
+                case 'student':
+                    $membershipType = 'Lid (student)';
+                    break;
+                case 'associated':
+                    $membershipType = 'Lid (associated)';
+                    break;
+                case 'lid':
+                default:
+                    $membershipType = 'Lid';
+                    break;
+            }
             Membership::create([
-                'contact_id' => $contact->id,
+                'contact_id'         => $contact->id,
                 'membership_type_id' => $membershipType,
-                ]);
+            ]);
 
             // Add activity
             Activity::createActivity($contact->id, "WPCivi_SignupForm_Result",
