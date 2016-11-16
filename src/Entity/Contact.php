@@ -27,15 +27,15 @@ class Contact extends DefaultContact
         /*
          * NOTE: A chain API call wasn't very efficient here (n+1)?
          * Replaced by a Membership.get and a Contact.get with contact_id IN (?)
-         * The CiviCRM 4.7 join API works well ('return' => 'contact_id.first_name') but doesn't
-         * seem to include an option to return _all_ fields for the contact.
+         * The CiviCRM 4.7 join API works well ('return' => 'contact_id.first_name') but doesn't seem to
+         * include an option to return _all_ fields for the contact. -> TODO ask / feature request?
          */
 
         if (!isset($mparams['membership_type_id'])) {
-            $mparams['membership_type_id'] = ['IN' => ['Lid', 'Lid (NVJ)']];
+            $mparams['membership_type_id'] = ['IN' => ['Lid', 'Lid (NVJ)', 'Lid (student)', 'Lid (associated)', 'Lead member']];
         }
         if (!isset($mparams['status_id'])) {
-            $mparams['status_id'] = ['IN' => ['New', 'Current', 'Grace']]; // + Pending for now? -> no
+            $mparams['status_id'] = ['IN' => ['New', 'Current', 'Grace']];
         }
         if (!isset($mparams['include_membership'])) {
             $mparams['return'] = 'contact_id';
@@ -53,6 +53,8 @@ class Contact extends DefaultContact
 
         $contacts = EntityCollection::get('Contact', [
             'contact_id' => ['IN' => $contact_ids],
+            'is_deleted' => 0,
+            'options' => ['sort' => 'sort_name'],
         ]);
         if ($mparams['include_membership'] && count($contacts) > 0) {
             foreach ($contacts as $contact) {
@@ -63,6 +65,18 @@ class Contact extends DefaultContact
         }
 
         return $contacts;
+    }
+
+    /**
+     * Custom member search function.
+     * TODO Not implemented yet! Members list search implemented in JS for now.
+     * @ignore
+     * @param array $mparams Membership API parameters
+     * @return EntityCollection|self[] Collection of Contact entities
+     */
+    public static function searchMembers($mparams = [])
+    {
+       return [];
     }
 
     /**

@@ -5,6 +5,7 @@ use WPCivi\Jourcoop\Gravity\MemberContactFormHandler;
 use WPCivi\Jourcoop\Gravity\MemberProfileFormHandler;
 use WPCivi\Jourcoop\Gravity\SignupFormHandler;
 use WPCivi\Jourcoop\Widget\ContactListWidget;
+use WPCivi\Jourcoop\Widget\ContactPageWidget;
 use WPCivi\Jourcoop\Widget\JobListWidget;
 use WPCivi\Shared\BasePlugin;
 
@@ -31,6 +32,7 @@ class Plugin extends BasePlugin
         /* --- INIT CUSTOM ACF / WIDGET / ETC BLOCKS --- */
 
         new ContactListWidget;
+        new ContactPageWidget;
         new JobListWidget;
 
         /* --- ADD CIVICRM TO ADMIN BAR --- */

@@ -49,6 +49,7 @@ class MemberProfileFormHandler extends BaseFormHandler
         foreach($form['fields'] as &$field) {
             $label = strtolower(preg_replace('/[^a-zA-z0-9]/', '', $field->label));
             switch($label) {
+
                 case 'specialisme':
                     $field->defaultValue = $contact->job_title;
                     break;
@@ -56,12 +57,16 @@ class MemberProfileFormHandler extends BaseFormHandler
                     $expertise = $contact->getCustom('Expertise');
                     $field->defaultValue = (is_array($expertise) ? implode(',',$contact->getCustom('Expertise')) : '');
                     break;
+                case 'functie':
+                    $field->defaultValue = $contact->getCustom('Functie');
+                    break;
                 case 'werkervaring';
                     $field->defaultValue = $contact->getCustom('Werkervaring');
                     break;
                 case 'werkplekvoorkeur':
                     $field->defaultValue = $contact->getCustom('Werkplekvoorkeur');
                     break;
+
                 case 'website':
                     $field->defaultValue = (!empty($websites['Work']) ? $websites['Work'] : '');
                     break;
@@ -80,6 +85,7 @@ class MemberProfileFormHandler extends BaseFormHandler
                 case 'googleprofiel':
                     $field->defaultValue = (!empty($websites['Google+']) ? $websites['Google+'] : '');
                     break;
+
                 default:
                     break;
             }
@@ -120,11 +126,15 @@ class MemberProfileFormHandler extends BaseFormHandler
         try {
             foreach ($data as $field => $value) {
                 switch ($field) {
+
                     case 'specialisme':
                         $contact->setValue('job_title', $value);
                         break;
                     case 'expertise':
                         $contact->setCustom('Expertise', $value);
+                        break;
+                    case 'functie':
+                        $contact->setCustom('Functie', $value);
                         break;
                     case 'werkervaring';
                         $contact->setCustom('Werkervaring', $value);
@@ -132,6 +142,7 @@ class MemberProfileFormHandler extends BaseFormHandler
                     case 'werkplekvoorkeur':
                         $contact->setCustom('Werkplekvoorkeur', $value);
                         break;
+
                     case 'website':
                         $value = $this->addhttp($value);
                         $websites['Work'] = $value;
@@ -156,6 +167,7 @@ class MemberProfileFormHandler extends BaseFormHandler
                         $value = $this->addhttp($value);
                         $websites['Google_'] = $value;
                         break;
+
                     default:
                         break;
                 }
