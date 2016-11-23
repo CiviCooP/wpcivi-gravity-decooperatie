@@ -16,7 +16,6 @@ use WPCivi\Shared\BasePlugin;
  */
 class Plugin extends BasePlugin
 {
-
     /**
      * Load plugin classes and register hooks
      */
@@ -43,14 +42,17 @@ class Plugin extends BasePlugin
     private function addToAdminBar()
     {
         $this->addAction('wp_before_admin_bar_render', function () {
-            /** @var \WP_Admin_Bar $wp_admin_bar */
-            global $wp_admin_bar;
-            $wp_admin_bar->add_node([
-                'parent' => '',
-                'id'     => 'jourcoop-admin-civicrm',
-                'title'  => 'CiviCRM',
-                'href'   => '/wp-admin/admin.php?page=CiviCRM',
-            ]);
-        }, 1);
+            if(current_user_can('access_civicrm')) {
+                /** @var \WP_Admin_Bar $wp_admin_bar */
+                global $wp_admin_bar;
+
+                $wp_admin_bar->add_node([
+                    'parent' => '',
+                    'id'     => 'jourcoop-admin-civicrm',
+                    'title'  => 'CiviCRM',
+                    'href'   => '/wp-admin/admin.php?page=CiviCRM',
+                ]);
+            }
+        }, 991);
     }
 }
