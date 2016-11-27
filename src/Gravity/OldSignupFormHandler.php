@@ -165,7 +165,8 @@ class OldSignupFormHandler extends BaseFormHandler
 
             // Add status and contact id to gform meta data
             gform_update_meta($entry['id'], 'wpcivi_status', 'SUCCESS', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_contactid', (isset($contact->id) ? $contact->id : null), $form['id']);
+            gform_update_meta($entry['id'], 'wpcivi_entity', 'Contact', $form['id']);
+            gform_update_meta($entry['id'], 'wpcivi_entityid', (isset($contact->id) ? $contact->id : null), $form['id']);
 
         } catch (\Exception $e) {
 
@@ -178,12 +179,13 @@ class OldSignupFormHandler extends BaseFormHandler
 
             // Exception handling for production --> Add error status to gform meta data, but show nothing to user
             gform_update_meta($entry['id'], 'wpcivi_status', 'ERROR (' . $e->getMessage() . ')', $form['id']);
+            gform_update_meta($entry['id'], 'wpcivi_entity', 'Contact', $form['id']);
 
             // If we were able to create a contact...
             if (is_object($contact) && isset($contact->id)) {
 
                 // Add contact id to gform meta data
-                gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->id, $form['id']);
+                gform_update_meta($entry['id'], 'wpcivi_entityid', $contact->id, $form['id']);
 
                 // Try to create an activity
                 try {

@@ -183,7 +183,8 @@ class MemberProfileFormHandler extends BaseFormHandler
 
             // Add status and contact id to gform meta data
             gform_update_meta($entry['id'], 'wpcivi_status', 'SUCCESS', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->getId(), $form['id']);
+            gform_update_meta($entry['id'], 'wpcivi_entity', 'Contact', $form['id']);
+            gform_update_meta($entry['id'], 'wpcivi_entityid', $contact->getId(), $form['id']);
 
         } catch (\Exception $e) {
 
@@ -194,10 +195,11 @@ class MemberProfileFormHandler extends BaseFormHandler
 
             // Exception handling for production --> Add error status to gform meta data, but show nothing to user
             gform_update_meta($entry['id'], 'wpcivi_status', 'ERROR (' . $e->getMessage() . ')', $form['id']);
+            gform_update_meta($entry['id'], 'wpcivi_entity', 'Contact', $form['id']);
 
-            // If we were able to create a contact, add contact id and try to create another activity
+            // If we were able to get and/or update a contact, add an activity that shows this error
             if (is_object($contact) && !empty($contact->getId())) {
-                gform_update_meta($entry['id'], 'wpcivi_contactid', $contact->getId(), $form['id']);
+                gform_update_meta($entry['id'], 'wpcivi_entityid', $contact->getId(), $form['id']);
 
                 try {
                     Activity::createActivity($contact->getId(), "WPCivi_MemberProfileForm_Result",
