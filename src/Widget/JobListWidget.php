@@ -6,7 +6,7 @@ use WPCivi\Shared\Widget\BaseCiviWidget;
 
 /**
  * Class Widget\ContactListWidget
- * Get or display a list of jobs (opdrachten = CiviCases) as a content block.
+ * Get or display a list of jobs (= opdrachten = cases) with status 'Public' as a content block.
  * @package WPCivi\Jourcoop
  */
 class JobListWidget extends BaseCiviWidget
@@ -28,7 +28,9 @@ class JobListWidget extends BaseCiviWidget
     public function view($params = [])
     {
         /** @var Cases[] $cases */
-        $cases = Cases::getJobs();
+        $cases = Cases::getJobs([
+                'status_id' => 'Public',
+        ]);
         ?>
 
         <div class="wpcivi-jourcoop-joblist cases">
@@ -40,10 +42,11 @@ class JobListWidget extends BaseCiviWidget
                                 <?= $c->subject; ?>
                             </a></h4>
                         <h5>
-                            Gestart: <?= $c->start_date; ?> |
-                            Status: <?= $c->getCaseStatusName(); ?> |
-                            Categorie: <?= $c->getCaseServiceName(); ?>
+                            Toegevoegd: <?= $c->start_date; ?> |
+                            Categorie: <?= $c->getCaseServiceName(); ?><br />
+                            (Status: <?= $c->getCaseStatusName(); ?>)
                         </h5>
+                        <p><?=nl2br($c->getCustom('Description'));?></p>
                     </div>
                 <?php endforeach; ?>
 
