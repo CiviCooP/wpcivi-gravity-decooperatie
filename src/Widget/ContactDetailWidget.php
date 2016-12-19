@@ -7,11 +7,11 @@ use WPCivi\Shared\Entity\Website;
 use WPCivi\Shared\Widget\BaseCiviWidget;
 
 /**
- * Class Widget\ContactPageWidget
+ * Class Widget\ContactDetailWidget
  * Display a single member as a separate page / block
  * @package WPCivi\Jourcoop
  */
-class ContactPageWidget extends BaseCiviWidget
+class ContactDetailWidget extends BaseCiviWidget
 {
 
     /**
@@ -24,15 +24,18 @@ class ContactPageWidget extends BaseCiviWidget
 
     /**
      * Echo widget content
-     * We currently get the user id via a $_GET parameter, TODO change into a proper rewrite rule.
+     * We currently get the user id via a $_GET parameter, TODO: change into a proper rewrite rule.
      * @param array $params Parameters
      * @return void
      */
     public function view($params = [])
     {
-        $contact_id = (int)$_GET['id'];
-
         try {
+            if(!isset($_GET['id'])) {
+                throw new WPCiviException('Contact niet gevonden! Een link naar deze pagina moet een geldige user-ID bevatten (?id=X)');
+            }
+            $contact_id = (int)$_GET['id'];
+
             // Try to load contact
             $c = new Contact;
             $c->load($contact_id);
@@ -43,7 +46,7 @@ class ContactPageWidget extends BaseCiviWidget
 
             <div class="member member_detail" id="<?= $slug; ?>">
                 <div class="member_avatar">
-                    <img src="<?= $gravatar; ?>" alt="<?= $c->display_name; ?>"/>
+                    <img src="<?= $gravatar; ?>" alt="<?= $c->display_name; ?>" style="width:200px;" />
                 </div>
 
                 <h4><?= $c->display_name; ?></h4>
@@ -78,7 +81,7 @@ class ContactPageWidget extends BaseCiviWidget
             status_header(404);
             ?>
 
-            <h3><?php _e('Contact not found! A link to this page should include a valid user id (?id=X).', 'wpcivi-jourcoop'); ?></h3>
+            <h3>Error: <?=$e->getMessage();?></h3>
 
             <?php
         }

@@ -38,13 +38,13 @@ class JobListWidget extends BaseCiviWidget
                 foreach ($cases as $c):
                     ?>
                     <div class="case">
-                        <h4><a href="#<?= $c->getSlug(); ?>" class="open-case">
-                                <?= $c->subject; ?>
-                            </a></h4>
+                        <h4>
+                            <a href="/opdrachten/detail/?id=<?=$c->getId();?>" class="open-case"><?= $c->subject; ?></a>
+                            (#<?=$c->id;?>)
+                        </h4>
                         <h5>
-                            Toegevoegd: <?= $c->start_date; ?> |
-                            Categorie: <?= $c->getCaseServiceName(); ?><br />
-                            (Status: <?= $c->getCaseStatusName(); ?>)
+                            <?php _e('Toegevoegd', 'wpcivi-jourcoop'); ?>: <?= $c->start_date; ?> |
+                            <?php _e('Categorie', 'wpcivi-jourcoop'); ?>: <?= $c->getCaseServiceName(); ?>
                         </h5>
                         <p><?=nl2br($c->getCustom('Description'));?></p>
                     </div>
@@ -52,7 +52,7 @@ class JobListWidget extends BaseCiviWidget
 
             <?php else: ?>
 
-                <h3><?php _e('No jobs found.', 'wpcivi-jourcoop'); ?></h3>
+                <h3><?php _e('Geen opdrachten gevonden', 'wpcivi-jourcoop'); ?></h3>
 
             <?php endif; ?>
         </div>

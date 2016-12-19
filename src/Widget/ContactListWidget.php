@@ -39,8 +39,8 @@ class ContactListWidget extends BaseCiviWidget
         <div class="members_search">
             <form action="#" method="post" name="form_members_search" id="form_members_search">
                 <span>Zoek op:</span>
-                <input type="text" name="search_name" id="search_name" placeholder="Naam" />
-                <input type="text" name="search_jobtitle" id="search_jobtitle" placeholder="Specialisme" />
+                <input type="text" name="search_name" id="search_name" placeholder="Naam"/>
+                <input type="text" name="search_jobtitle" id="search_jobtitle" placeholder="Specialisme"/>
                 <button type="submit" name="submit" id="search_submit">Zoek!</button>
                 <button type="reset" name="reset" id="search_reset" class="hide">Toon alles</button>
             </form>
@@ -48,8 +48,8 @@ class ContactListWidget extends BaseCiviWidget
 
         <div class="members_list">
             <?php
-                /** @var Contact[] $contacts */
-                if (!empty($contacts) && count($contacts) > 0):
+            /** @var Contact[] $contacts */
+            if (!empty($contacts) && count($contacts) > 0):
                 foreach ($contacts as $c):
                     ?>
                     <div class="member member_profile" itemscope itemprop="Person">
@@ -57,13 +57,15 @@ class ContactListWidget extends BaseCiviWidget
                             <img src="<?= get_gravatar($c->email); ?>" alt="<?= $c->display_name; ?>"/>
                         </a>
                         <div class="member_content">
-                            <h4><a href="#<?= $c->getSlug(); ?>" class="open-popup" itemprop="name"><?= $c->display_name; ?></a></h4>
+                            <h4><a href="#<?= $c->getSlug(); ?>" class="open-popup"
+                                   itemprop="name"><?= $c->display_name; ?></a></h4>
                             <h3 itemprop="jobTitle"><?= $c->job_title; ?></h3>
                         </div>
                     </div>
-                    <?php endforeach;
-                          foreach($contacts as $c): ?>
-                    <div class="member member_popup white-popup mfp-hide" id="<?= $c->getSlug(); ?>" data-contactid="<?=$c->getId();?>">
+                <?php endforeach;
+                foreach ($contacts as $c): ?>
+                    <div class="member member_popup white-popup mfp-hide" id="<?= $c->getSlug(); ?>"
+                         data-contactid="<?= $c->getId(); ?>">
                         <div class="member_avatar">
                             <img src="<?= get_gravatar($c->email); ?>" alt="<?= $c->display_name; ?>"/>
                         </div>
@@ -72,20 +74,28 @@ class ContactListWidget extends BaseCiviWidget
                             <h4><?= $c->display_name; ?></h4>
                             <h3><?= $c->job_title; ?></h3>
                             <p>
-                                <?php if(!empty($c->phone)): ?><em>Telefoon:</em> <?= $c->phone; ?><br/><?php endif; ?>
-                                <?php if(!empty($c->email)): ?><em>E-mail:</em> <a href="mailto:<?= $c->email; ?>"><?= $c['email']; ?></a><br/><?php endif; ?>
+                                <?php if (!empty($c->phone)): ?>
+                                    <em><?php _e('Telefoon', 'wpcivi-jourcoop'); ?>:</em>
+                                    <?= $c->phone; ?><br/>
+                                <?php endif; ?>
+                                <?php if (!empty($c->email)): ?>
+                                    <em><?php _e('E-mail', 'wpcivi-jourcoop'); ?>:</em>
+                                    <a href="mailto:<?= $c->email; ?>"><?= $c['email']; ?></a><br/>
+                                <?php endif; ?>
                                 <br/>
 
                                 <?php
                                 $expertise = $c->getCustom('Expertise');
                                 $werkervaring = $c->getCustom('Werkervaring');
                                 if (!empty($expertise)): ?>
-                                    <em>Expertise: </em> <?= implode(', ', $expertise); ?><br/>
+                                    <em><?php _e('Expertise', 'wpcivi-jourcoop'); ?>: </em>
+                                    <?= implode(', ', $expertise); ?><br/>
                                 <?php endif; ?>
                                 <?php if (!empty($werkervaring)): ?>
-                                    <em>Omschrijving/werkervaring:</em> <?= nl2br($werkervaring); ?><br />
+                                    <em><?php _e('Omschrijving/werkervaring', 'wpcivi-jourcoop'); ?>:</em>
+                                    <?= nl2br($werkervaring); ?><br/>
                                 <?php endif; ?>
-                                <br />
+                                <br/>
 
                                 <?php
                                 $websites = Website::getWebsitesForContact($c->id);
@@ -102,8 +112,8 @@ class ContactListWidget extends BaseCiviWidget
 
             <?php else: ?>
 
-                <h3>Er zijn geen leden gevonden voor deze zoekopdracht.</h3>
-                <a href="<?=the_permalink();?>">Toon alle contacten</a>
+                <h3><?php _e('Er zijn geen leden gevonden voor deze zoekopdracht', 'wpcivi-jourcoop'); ?></h3>
+                <a href="<?= the_permalink(); ?>"><?php _e('Toon alle contacten', 'wpcivi-jourcoop'); ?></a>
 
             <?php endif; ?>
         </div>
