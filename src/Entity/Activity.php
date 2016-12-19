@@ -15,14 +15,15 @@ class Activity extends DefaultActivity
      * Helper function to quickly add a (system) activity with default options.
      * @param $target_contact_id
      * @param $activity_type_id
-     * @param $subject
-     * @param $details
-     * @param string $status_id
-     * @param int $source_contact_id
+     * @param string $subject
+     * @param string|null $details
+     * @param string|null $status_id
+     * @param int|null $source_contact_id
+     * @param int|null $case_id
      * @return static Activity Entity
      * @throws WPCiviException
      */
-    public static function createActivity($target_contact_id, $activity_type_id, $subject, $details,
+    public static function createActivity($target_contact_id, $activity_type_id, $subject, $details = null,
                                           $status_id = 'Completed', $source_contact_id = null)
     {
         $activity = new static;

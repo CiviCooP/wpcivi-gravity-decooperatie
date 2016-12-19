@@ -2,6 +2,7 @@
 namespace WPCivi\Jourcoop\Entity;
 
 use WPCivi\Shared\Entity\Membership as DefaultMembership;
+use WPCivi\Shared\EntityCollection as DefaultEntityCollection;
 use WPCivi\Jourcoop\EntityCollection;
 
 /**
@@ -14,7 +15,7 @@ class Membership extends DefaultMembership
     /**
      * Get active memberships (all memberships or for contact $contact_id)
      * @param null $contact_id Contact ID or null
-     * @return EntityCollection Collection of memberships
+     * @return EntityCollection|DefaultEntityCollection Collection of memberships
      */
     public static function getActiveMemberships($contact_id = null)
     {
@@ -34,7 +35,7 @@ class Membership extends DefaultMembership
             'membership_type_id' => 'Lid',
             'status_id'          => 'Pending',
             'is_override'        => 1,
-            'join_date'          => date('Ymdhis'),
+            'join_date'          => date('YmdHis'),
         ]);
     }
 

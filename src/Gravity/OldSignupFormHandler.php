@@ -36,7 +36,7 @@ class OldSignupFormHandler extends BaseFormHandler
 
         // Check fields based on field label
         // (Anyone know a better way? Fields don't seem to have internal names)
-        $label = strtolower(preg_replace('/[^a-zA-z0-9]/', '', $field->label));
+        $label = $this->getBaseLabel($field->label);
 
         // Capitalize postcode / huisnummer / toevoeging / woonplaats / rekeningnr
         if (in_array($label, ['postcode', 'huisnummer', 'toevoeging', 'woonplaats', 'rekeningnummeriban'])) {
@@ -142,7 +142,7 @@ class OldSignupFormHandler extends BaseFormHandler
                 ['Leden_Tijdelijk', 'Lid_Cooperatie', 'Y'],
                 ['Leden_Tijdelijk', 'Rekeningnummer_IBAN', $data['rekeningnummeriban']],
                 ['Leden_Tijdelijk', 'Akkoord_Incasso', 'Y'],
-                ['Leden_Tijdelijk', 'Aanmelddatum', date('Ymdhis')],
+                ['Leden_Tijdelijk', 'Aanmelddatum', date('YmdHis')],
                 ['Leden_Tijdelijk', 'Lid_NVJ', $data['benjelidvandenvj']],
                 ['Leden_Tijdelijk', 'Werkplekvoorkeur', $data['werkplekvoorkeur']],
             ]);

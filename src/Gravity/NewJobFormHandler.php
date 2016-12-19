@@ -10,7 +10,6 @@ use WPCivi\Shared\Gravity\BaseFormHandler;
 /**
  * Class Gravity\NewJobFormHandler
  * Handles Gravity Form submissions for the DeCooperatie.org New Job Form ('Nieuwe opdracht').
- * TODO WORK IN PROGRESS!
  * @package WPCivi\Jourcoop
  */
 class NewJobFormHandler extends BaseFormHandler
@@ -24,7 +23,7 @@ class NewJobFormHandler extends BaseFormHandler
 
     /**
      * Implements hook gform_after_submission.
-     * Saves entry to CiviCRM - and adds the result status and CiviCRM *case* ID to the entry meta data.
+     * Saves entry to CiviCRM - and adds the result status and CiviCRM *Case* ID to the entry meta data.
      * @param mixed $entry Entry
      * @param mixed $form Form
      * @return mixed Entry
@@ -76,35 +75,29 @@ class NewJobFormHandler extends BaseFormHandler
             $case->setValue('contact_id', $client->id);
             $case->save();
 
-            // TODO Temporary workaround! Adding custom fields using Case.Create does not work...?
-            $fields = $case->getFields('create');
-            WPCiviApi::call('Case', 'setvalue', ['field' => $fields['Description']->api_field_name, 'id' => $case->getId(), 'value' => $data['beschrijving']]);
-            WPCiviApi::call('Case', 'setvalue', ['field' => $fields['Service']->api_field_name, 'id' => $case->getId(), 'value' => $data['categorie']]);
+            // Adding custom fields using Case.Create does not work - temporary workaround in setSingleCustomValue method!
+            // TODO: Report / fix Case API class?
+
+            $case->setSingleCustomValue('Description', $data['beschrijving']);
+            $case->setSingleCustomValue('Service', $data['categorie']);
 
             if(isset($data['startdatum'])) {
-                // Start date from form -> custom field, case start_date -> date we start processing this job
-                WPCiviApi::call('Case', 'setvalue', ['field' => $fields['Start_Date']->api_field_name, 'id' => $case->getId(), 'value' => date('Ymd', strtotime($data['startdatum']))]);
+                // Note: start date from form = custom field; core field start_date for case = date processing is started.
+                $startDate = date('YmdHis', strtotime($data['startdatum']));
+                $case->setSingleCustomValue('Start_Date', $startDate);
+            }
+            if(isset($data['tarief'])) {
+                $case->setSingleCustomValue('Tariff', $data['tarief']);
             }
 
-            // Not creating activities since that is handled within CiviCase anyway
-            // TODO Rewrite form handler exception handling + creating activities, similar code in most handlers
-
-            // Add status and case id to gform meta data (now supports entity/entityid
-            gform_update_meta($entry['id'], 'wpcivi_status', 'SUCCESS', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_entity', 'Case', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_entityid', $case->getId(), $form['id']);
+            // CiviCase creates activities automatically; but do set status and save entity info to metadata here if possible
+            $this->setWPCiviStatus(self::WPCIVI_SUCCESS, $form, $entry, 'Case', $case->id);
 
         } catch (\Exception $e) {
 
-            // Exception handling for development
-            if (WP_DEBUG === true) {
-                echo "<strong>Gravity Form Handler error, exiting because WP_DEBUG is enabled:</strong><br />\n";
-                throw new \Exception($e->getMessage(), $e->getCode(), $e);
-            }
-
-            // Exception handling for production --> Add error status to gform meta data, but show nothing to user
-            gform_update_meta($entry['id'], 'wpcivi_status', 'ERROR (' . $e->getMessage() . ')', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_entity', 'Case', $form['id']);
+            // Set error status
+            $caseId = is_object($case) && !empty($case->id) ? $case->id : null;
+            $this->setWPCiviStatus(self::WPCIVI_ERROR, $form, $entry, 'Case', $caseId, $e->getMessage(), $e);
         }
 
         // Return entry

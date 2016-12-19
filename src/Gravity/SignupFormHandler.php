@@ -73,38 +73,24 @@ class SignupFormHandler extends BaseFormHandler
             Activity::createActivity($contact->id, "WPCivi_SignupForm_Result",
                 "Contact and membership added by SignupFormHandler", "Gravity Forms Entry ID: " . (int)$entry['id']);
 
-            // Add status and contact id to gform meta data
-            gform_update_meta($entry['id'], 'wpcivi_status', 'SUCCESS', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_entity', 'Contact', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_entityid', $contact->id, $form['id']);
-
+            // Set status and save entity info to metadata if possible
+            $this->setWPCiviStatus(self::WPCIVI_SUCCESS, $form, $entry, 'Contact', $contact->id);
         } catch (\Exception $e) {
 
-            // Exception handling for development
-            if (WP_DEBUG === true) {
-                echo "<strong>Gravity Form Handler error, exiting because WP_DEBUG is enabled:</strong><br />\n";
-                throw new \Exception($e->getMessage(), $e->getCode(), $e);
-                exit;
-            }
-
-            // Exception handling for production --> Add error status to gform meta data, but show nothing to user
-            gform_update_meta($entry['id'], 'wpcivi_status', 'ERROR (' . $e->getMessage() . ')', $form['id']);
-            gform_update_meta($entry['id'], 'wpcivi_entity', 'Contact', $form['id']);
-
-            // If we were able to create a contact...
+            // If we were able to create a contact try to create an activity, then set status
             if (is_object($contact) && !empty($contact->id)) {
 
-                // Add contact id to gform meta data
-                gform_update_meta($entry['id'], 'wpcivi_entityid', $contact->id, $form['id']);
+                $this->setWPCiviStatus(self::WPCIVI_ERROR, $form, $entry, 'Contact', $contact->id, $e->getMessage(), $e);
 
-                // Try to create an activity
                 try {
                     Activity::createActivity($contact->id, "WPCivi_SignupForm_Result",
                         "An error occurred while handling this form submission", "Error: " . $e->getMessage() . "<br>
                          Gravity Forms Entry ID: " . $entry['id'] . ".", "Cancelled");
                 } catch (\Exception $e) {
-                    // We won't create an activity about failing to create an activity after failing to create a contact.
+                    // We won't create an activity about failing to create an activity
                 }
+            } else {
+                $this->setWPCiviStatus(self::WPCIVI_ERROR, $form, $entry, 'Contact', null, $e->getMessage(), $e);
             }
         }
 

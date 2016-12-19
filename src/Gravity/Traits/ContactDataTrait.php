@@ -27,7 +27,7 @@ trait ContactDataTrait
 
         // Check fields based on field label
         // (Anyone know a better way? Fields don't seem to have internal names)
-        $label = strtolower(preg_replace('/[^a-zA-z0-9]/', '', $field->label));
+        $label = $this->getBaseLabel($field->label);
 
         // Capitalize postcode / huisnummer / toevoeging / woonplaats / rekeningnr
         if (in_array($label, ['postcode', 'huisnummer', 'toevoeging', 'woonplaats', 'rekeningnummeriban'])) {
