@@ -2,6 +2,7 @@
 namespace WPCivi\Jourcoop\Widget;
 
 use WPCivi\Jourcoop\Entity\Contact;
+use WPCivi\Shared\Entity\OptionValue;
 use WPCivi\Shared\Entity\Website;
 use WPCivi\Shared\Widget\BaseCiviWidget;
 
@@ -41,6 +42,13 @@ class ContactListWidget extends BaseCiviWidget
                 <span>Zoek op:</span>
                 <input type="text" name="search_name" id="search_name" placeholder="Naam"/>
                 <input type="text" name="search_jobtitle" id="search_jobtitle" placeholder="Specialisme"/>
+                <select name="search_functie" id="search_functie">
+                    <option value="">- Functie -</option>
+                    <?php $optionValues = OptionValue::getOptionValues('functie_nieuw__20161225232831');
+                    foreach($optionValues as $ov): ?>
+                    <option value="<?=$ov->value;?>"><?=$ov->label;?></option>
+                    <?php endforeach; ?>
+                </select>
                 <button type="submit" name="submit" id="search_submit">Zoek!</button>
                 <button type="reset" name="reset" id="search_reset" class="hide">Toon alles</button>
             </form>
@@ -51,6 +59,7 @@ class ContactListWidget extends BaseCiviWidget
             /** @var Contact[] $contacts */
             if (!empty($contacts) && count($contacts) > 0):
                 foreach ($contacts as $c):
+                    $functie = $c->getCustom('Functie');
                     ?>
                     <div class="member member_profile" itemscope itemprop="Person">
                         <a href="#<?= $c->getSlug(); ?>" class="member_avatar open-popup">
@@ -60,6 +69,7 @@ class ContactListWidget extends BaseCiviWidget
                             <h4><a href="#<?= $c->getSlug(); ?>" class="open-popup"
                                    itemprop="name"><?= $c->display_name; ?></a></h4>
                             <h3 itemprop="jobTitle"><?= $c->job_title; ?></h3>
+                            <span style="display:none;" itemprop="functie"><?=$functie; ?></span>
                         </div>
                     </div>
                 <?php endforeach;
@@ -87,6 +97,11 @@ class ContactListWidget extends BaseCiviWidget
                                 <?php
                                 $expertise = $c->getCustom('Expertise');
                                 $werkervaring = $c->getCustom('Werkervaring');
+                                /* $functie = $c->getCustom('Functie');
+                                if(!empty($functie)): ?>
+                                    <em><?php _e('Functie', 'wpcivi-jourcoop'); ?>: </em>
+                                    <?=$functie;?>
+                                <?php endif; */
                                 if (!empty($expertise)): ?>
                                     <em><?php _e('Expertise', 'wpcivi-jourcoop'); ?>: </em>
                                     <?= implode(', ', $expertise); ?><br/>
@@ -95,12 +110,17 @@ class ContactListWidget extends BaseCiviWidget
                                     <em><?php _e('Omschrijving/werkervaring', 'wpcivi-jourcoop'); ?>:</em>
                                     <?= nl2br($werkervaring); ?><br/>
                                 <?php endif; ?>
-                                <br/>
+                                <?php if(!empty($expertise) || !empty($werkervaring)): ?>
+                                    <br/>
+                                <?php endif; ?>
 
                                 <?php
                                 $websites = Website::getWebsitesForContact($c->id);
                                 foreach ($websites as $type => $url):
                                     $type = ($type == 'Work' ? 'Website' : $type);
+                                    if (empty($url)):
+                                        continue;
+                                    endif;
                                     ?>
                                     <em><?= $type; ?></em>:
                                     <a href="<?= $url; ?>" rel="nofollow" target="_blank"><?= $url; ?></a><br/>

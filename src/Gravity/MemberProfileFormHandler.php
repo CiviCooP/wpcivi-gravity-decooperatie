@@ -68,7 +68,7 @@ class MemberProfileFormHandler extends BaseFormHandler
                     break;
 
                 case 'website':
-                    $field->defaultValue = (!empty($websites['Work']) ? $websites['Work'] : '');
+                    $field->defaultValue = ((!empty($websites['Work']) && $websites['Work'] != 'http://') ? $websites['Work'] : '');
                     break;
                 case 'linkedinprofiel':
                     $field->defaultValue = (!empty($websites['LinkedIn']) ? $websites['LinkedIn'] : '');
@@ -207,7 +207,15 @@ class MemberProfileFormHandler extends BaseFormHandler
         return $entry;
     }
 
-    function addhttp($url) {
+    /**
+     * Adds HTTP to a URL if necessary
+     * @param string $url URL
+     * @return string URL with http://
+     */
+    private function addhttp($url) {
+        if(empty($url) || $url == 'http://') {
+            return '';
+        }
         if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
             $url = "http://" . $url;
         }

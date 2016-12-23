@@ -12,13 +12,18 @@ jQuery(function ($) {
         this.init = function () {
 
             var that = this;
+            var $form_members_search = $('#form_members_search');
 
-            $('#form_members_search').on('submit', function (ev) {
-                that.search(); // Perform search
+            $form_members_search.on('submit', function (ev) {
+                that.search(); // Perform search on form submit
                 ev.preventDefault();
             });
 
-            $('#form_members_search').on('click', ' #search_reset', function (ev) {
+            $form_members_search.on('change', '#search_functie', function(ev) {
+                that.search(); // Search on select change too
+            });
+
+            $form_members_search.on('click', ' #search_reset', function (ev) {
                 that.reset(); // Reset list items (form fields are reset by browser)
             });
         };
@@ -27,6 +32,7 @@ jQuery(function ($) {
         this.search = function () {
             var sName = $('#form_members_search #search_name').val().toLowerCase();
             var sJobTitle = $('#form_members_search #search_jobtitle').val().toLowerCase();
+            var sFunctie = $('#form_members_search #search_functie').val();
 
             var $listcontainer = $('.members_list');
             var $profiles = $('.members_list .member_profile');
@@ -41,7 +47,7 @@ jQuery(function ($) {
 
                 if (sName.length > 0) {
                     var name = $profile.find('[itemprop=name]').html();
-                    console.log(name, sName, $profile);
+                    // console.log(name, sName, $profile);
                     if(name.toLowerCase().indexOf(sName) == -1) {
                         return true; // No match, next
                     }
@@ -49,14 +55,22 @@ jQuery(function ($) {
 
                 if (sJobTitle.length > 0) {
                     var jobTitle = $profile.find('[itemprop=jobTitle]').html();
-                    console.log(jobTitle, sJobTitle, $profile);
+                    // console.log(jobTitle, sJobTitle, $profile);
                     if(jobTitle.toLowerCase().indexOf(sJobTitle) == -1) {
                         return true; // No match, next
                     }
                 }
 
+                if(sFunctie.length > 0) {
+                    var functie = $profile.find('[itemprop=functie]').html();
+                    // console.log(functie, sFunctie, $profile);
+                    if(functie.indexOf(sFunctie) == -1) {
+                        return true; // No match, next
+                    }
+                }
+
                 // If we reached this point, it's a match
-                console.log('Match', $profile);
+                // console.log('Match', $profile);
                 $profile.show();
             });
 
