@@ -63,7 +63,7 @@ class ContactListWidget extends BaseCiviWidget
                     ?>
                     <div class="member member_profile" itemscope itemprop="Person">
                         <a href="#<?= $c->getSlug(); ?>" class="member_avatar open-popup">
-                            <img src="<?= get_gravatar($c->email); ?>" alt="<?= $c->display_name; ?>"/>
+                          <?php echo get_avatar($c->email); ?>
                         </a>
                         <div class="member_content">
                             <h4><a href="#<?= $c->getSlug(); ?>" class="open-popup"
@@ -77,7 +77,7 @@ class ContactListWidget extends BaseCiviWidget
                     <div class="member member_popup white-popup mfp-hide" id="<?= $c->getSlug(); ?>"
                          data-contactid="<?= $c->getId(); ?>">
                         <div class="member_avatar">
-                            <img src="<?= get_gravatar($c->email); ?>" alt="<?= $c->display_name; ?>"/>
+                          <?php echo get_avatar($c->email); ?>
                         </div>
 
                         <div class="member_content">

@@ -32,7 +32,7 @@ class Contact extends DefaultContact
          */
 
         if (!isset($mparams['membership_type_id'])) {
-            $mparams['membership_type_id'] = ['IN' => ['Lid', 'Lid (NVJ)', 'Lid (student)', 'Lid (associated)', 'Lead member']];
+          $mparams['membership_type_id'] = ['NOT IN' => ['Lid (administratief)']];
         }
         if (!isset($mparams['status_id'])) {
             $mparams['status_id'] = ['IN' => ['New', 'Current', 'Grace']];
