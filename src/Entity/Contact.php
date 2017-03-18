@@ -80,6 +80,22 @@ class Contact extends DefaultContact
     }
 
     /**
+     * Function to get contacts with 'Beschikbaar als spreker?' => 'Ja'.
+     * @return EntityCollection|self[] Collection of contact entities
+     */
+    public static function getSprekers()
+    {
+      $fields = (new static)->getFields();
+      $customFieldName = $fields['Beschikbaar_als_spreker']->api_field_name;
+
+      return EntityCollection::get('Contact', [
+          $customFieldName => 'ja',
+          'is_deleted' => 0,
+          'options' => ['sort' => 'sort_name'],
+      ]);
+    }
+
+    /**
      * Custom function to Create a CiviCRM individual contact, address and other contact data in one go.
      * Dutch field names are used on the form, so they're reused here.
      * @param array $params Parameters

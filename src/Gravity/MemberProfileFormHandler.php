@@ -66,6 +66,9 @@ class MemberProfileFormHandler extends BaseFormHandler
                 case 'werkplekvoorkeur':
                     $field->defaultValue = $contact->getCustom('Werkplekvoorkeur');
                     break;
+                case 'beschikbaaralsspreker':
+                    $field->defaultValue = $contact->getCustom('Beschikbaar_als_spreker');
+                    break;
 
                 case 'website':
                     $field->defaultValue = ((!empty($websites['Work']) && $websites['Work'] != 'http://') ? $websites['Work'] : '');
@@ -141,6 +144,9 @@ class MemberProfileFormHandler extends BaseFormHandler
                         break;
                     case 'werkplekvoorkeur':
                         $contact->setCustom('Werkplekvoorkeur', $value);
+                        break;
+                  case 'beschikbaaralsspreker':
+                        $contact->setCustom('Beschikbaar_als_spreker', $value);
                         break;
 
                     case 'website':

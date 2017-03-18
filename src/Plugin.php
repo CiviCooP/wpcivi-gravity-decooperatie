@@ -7,8 +7,8 @@ use WPCivi\Jourcoop\Gravity\MemberProfileFormHandler;
 use WPCivi\Jourcoop\Gravity\NewJobFormHandler;
 use WPCivi\Jourcoop\Gravity\SignupFormHandler;
 use WPCivi\Jourcoop\Widget\ContactDetailWidget;
+use WPCivi\Jourcoop\Widget\ContactListSprekersWidget;
 use WPCivi\Jourcoop\Widget\ContactListWidget;
-use WPCivi\Jourcoop\Widget\ContactPageWidget;
 use WPCivi\Jourcoop\Widget\JobDetailWidget;
 use WPCivi\Jourcoop\Widget\JobListWidget;
 use WPCivi\Shared\BasePlugin;
@@ -40,6 +40,7 @@ class Plugin extends BasePlugin
         new ContactDetailWidget;
         new JobListWidget;
         new JobDetailWidget;
+        new ContactListSprekersWidget;
 
         /* --- ADD CIVICRM TO ADMIN BAR --- */
 
