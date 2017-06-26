@@ -35,6 +35,8 @@ class ContactListWidget extends BaseCiviWidget
 
         // Get all members
         $contacts = Contact::getMembers();
+        $contacts->prefetchCustomData(['Functie', 'Werkervaring']);
+        $websites = Website::getWebsitesForContacts($contacts);
         ?>
 
         <div class="members_search">

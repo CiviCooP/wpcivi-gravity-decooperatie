@@ -54,7 +54,7 @@ class Contact extends DefaultContact
         $contacts = EntityCollection::get('Contact', [
             'contact_id' => ['IN' => $contact_ids],
             'is_deleted' => 0,
-            'options' => ['sort' => 'sort_name'],
+            'options'    => ['sort' => 'sort_name'],
         ]);
         if ($mparams['include_membership'] && count($contacts) > 0) {
             foreach ($contacts as $contact) {

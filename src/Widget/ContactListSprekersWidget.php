@@ -2,6 +2,7 @@
 namespace WPCivi\Jourcoop\Widget;
 
 use WPCivi\Jourcoop\Entity\Contact;
+use WPCivi\Shared\Entity\Website;
 use WPCivi\Shared\Widget\BaseCiviWidget;
 
 /**
@@ -29,6 +30,8 @@ class ContactListSprekersWidget extends BaseCiviWidget
     {
         // Get all members
         $contacts = Contact::getSprekers();
+        $contacts->prefetchCustomData(['Functie', 'Werkervaring']);
+        $websites = Website::getWebsitesForContacts($contacts);
         ?>
 
         <div class="members_list">

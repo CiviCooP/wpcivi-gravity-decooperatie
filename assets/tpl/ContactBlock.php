@@ -20,8 +20,9 @@
       <br/>
 
       <?php
-      $expertise = $c->getCustom('Expertise');
       $werkervaring = $c->getCustom('Werkervaring');
+      // $expertise = $c->getCustom('Expertise');
+
       /* $functie = $c->getCustom('Functie');
       if(!empty($functie)): ?>
           <em><?php _e('Functie', 'wpcivi-jourcoop'); ?>: </em>
@@ -40,8 +41,8 @@
       <?php endif; ?>
 
       <?php
-      $websites = \WPCivi\Shared\Entity\Website::getWebsitesForContact($c->id);
-      foreach ($websites as $type => $url):
+      if(!empty($websites[$c->id])):
+      foreach ($websites[$c->id] as $type => $url):
         $type = ($type == 'Work' ? 'Website' : $type);
         if (empty($url)):
           continue;
@@ -49,7 +50,8 @@
         ?>
         <em><?= $type; ?></em>:
         <a href="<?= $url; ?>" rel="nofollow" target="_blank"><?= $url; ?></a><br/>
-      <?php endforeach; ?>
+      <?php endforeach;
+      endif; ?>
     </p>
   </div>
 </div>
