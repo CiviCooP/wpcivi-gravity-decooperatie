@@ -4,7 +4,7 @@
 Plugin Name: WPCivi Jourcoop
 Plugin URI: https://github.com/civicoop/wpcivi-jourcoop
 Description: Integration logic specific for De Coöperatie: custom forms, widgets and other functions.
-Version: 1.3.0
+Version: 1.3.1
 Author: CiviCooP / Kevin Levie
 Author URI: https://levity.nl
 License: AGPL 3 or later

@@ -3,6 +3,7 @@ namespace WPCivi\Jourcoop;
 
 use WPCivi\Jourcoop\Gravity\JobReplyFormHandler;
 use WPCivi\Jourcoop\Gravity\MemberContactFormHandler;
+use WPCivi\Jourcoop\Gravity\MemberPaymentFormHandler;
 use WPCivi\Jourcoop\Gravity\MemberProfileFormHandler;
 use WPCivi\Jourcoop\Gravity\NewJobFormHandler;
 use WPCivi\Jourcoop\Gravity\SignupFormHandler;
@@ -33,6 +34,7 @@ class Plugin extends BasePlugin
         new MemberProfileFormHandler;
         new NewJobFormHandler;
         new JobReplyFormHandler;
+        new MemberPaymentFormHandler;
 
         /* --- INIT CUSTOM ACF / WIDGET / ETC BLOCKS --- */
 
