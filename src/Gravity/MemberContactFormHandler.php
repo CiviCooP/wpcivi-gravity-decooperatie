@@ -77,6 +77,9 @@ class MemberContactFormHandler extends BaseFormHandler
                 case 'woonplaats':
                     $field->defaultValue = $contact->getAddress()->getValue('city');
                     break;
+                case 'land':
+                    $field->defaultValue = $contact->getAddress()->getValue('country_id');
+                    break;
                 case 'telefoon':
                     $field->defaultValue = $contact->getPhone()->getValue('phone');
                     break;
@@ -143,7 +146,6 @@ class MemberContactFormHandler extends BaseFormHandler
                         $contact->setValue('last_name', $value);
                         break;
                     case 'straat':
-                        // Mooier zou hier natuurlijk zijn: $contact->getAddress()->setStreetName('');
                         $contact->getAddress()->setValue('street_name', $value);
                         // TODO Toegevoegd door Gyurka, zóu niet nodig moeten zijn, nog debuggen
                         $contact->getAddress()->setValue('contact_id', $contact->id);
@@ -160,6 +162,9 @@ class MemberContactFormHandler extends BaseFormHandler
                         break;
                     case 'woonplaats':
                         $contact->getAddress()->setValue('city', $value);
+                        break;
+                    case 'land':
+                        $contact->getAddress()->setValue('country_id', $value);
                         break;
                     case 'telefoon':
                         $contact->getPhone()->setValue('phone', $value);

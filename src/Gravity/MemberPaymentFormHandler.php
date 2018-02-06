@@ -3,8 +3,9 @@ namespace WPCivi\Jourcoop\Gravity;
 
 use WPCivi\Jourcoop\Entity\Activity;
 use WPCivi\Jourcoop\Entity\Contact;
+use WPCivi\Jourcoop\Entity\Membership;
+use WPCivi\Jourcoop\EntityCollection;
 use WPCivi\Jourcoop\Plugin;
-use WPCivi\Shared\Entity\Website;
 use WPCivi\Shared\Gravity\BaseFormHandler;
 
 /**
@@ -40,7 +41,6 @@ class MemberPaymentFormHandler extends BaseFormHandler
         $contact = new Contact;
         try {
             $contact->loadCurrentWPUser();
-            $websites = Website::getWebsitesForContact($contact->id);
         } catch(\Exception $e) {
             Plugin::exitOnException($e);
         }
@@ -58,8 +58,14 @@ class MemberPaymentFormHandler extends BaseFormHandler
                 case 'achternaam';
                     $field->defaultValue = $contact->getValue('last_name');
                     break;
-                case 'straathuisnummer':
-                    $field->defaultValue = $contact->getAddress()->getValue('street_address');
+                case 'straat':
+                    $field->defaultValue = $contact->getAddress()->getValue('street_name');
+                    break;
+                case 'huisnummer':
+                    $field->defaultValue = $contact->getAddress()->getValue('street_number');
+                    break;
+                case 'toevoeging':
+                    $field->defaultValue = $contact->getAddress()->getValue('street_unit');
                     break;
                 case 'postcode':
                     $field->defaultValue = $contact->getAddress()->getValue('postal_code');
@@ -68,14 +74,14 @@ class MemberPaymentFormHandler extends BaseFormHandler
                     $field->defaultValue = $contact->getAddress()->getValue('city');
                     break;
                 case 'land':
-                    $field->defaultValue = 'Nederland'; // TODO Parse country
+                    $field->defaultValue = $contact->getAddress()->getValue('country_id');
                     break;
                 case 'emailadres':
                     $field->defaultValue = $contact->getEmail()->getValue('email');
                     break;
-                /* case 'lidmaatschap':
-                    $field->defaultValue = ''; // TODO
-                    break; */
+                case 'lidmaatschap':
+                    $this->filterMembershipChoices($field, $contact->getActiveMemberships());
+                    break;
                 default:
                     break;
             }
@@ -104,10 +110,8 @@ class MemberPaymentFormHandler extends BaseFormHandler
 
         // Get contact
         $contact = new Contact;
-        $websites = [];
         try {
             $contact->loadCurrentWPUser();
-            $websites = Website::getWebsitesForContact($contact->id, true);
         } catch(\Exception $e) {
             Plugin::exitOnException($e);
         }
@@ -125,8 +129,16 @@ class MemberPaymentFormHandler extends BaseFormHandler
                     case 'achternaam';
                         $contact->setValue('last_name', $value);
                         break;
-                    case 'straathuisnummer':
-                        $contact->getAddress()->setValue('street_address', $value);
+                    case 'straat':
+                        $contact->getAddress()->setValue('street_name', $value);
+                        $contact->getAddress()->setValue('contact_id', $contact->id);
+                        $contact->getAddress()->setValue('location_type_id', 'Work');
+                        break;
+                    case 'huisnummer':
+                        $contact->getAddress()->setValue('street_number', $value);
+                        break;
+                    case 'toevoeging':
+                        $contact->getAddress()->setValue('street_unit', $value);
                         break;
                     case 'postcode':
                         $contact->getAddress()->setValue('postal_code', $value);
@@ -135,20 +147,26 @@ class MemberPaymentFormHandler extends BaseFormHandler
                         $contact->getAddress()->setValue('city', $value);
                         break;
                     case 'land':
-                        // TODO Process country $contact->getAddress()->setValue('country', $value);
+                        $contact->getAddress()->setValue('country_id', $value);
                         break;
                     case 'emailadres':
                         $contact->getEmail()->setValue('email', $value);
                         break;
-                    /* case 'lidmaatschap':
-                        // TODO Process, hoe?
-                        break; */
+                    case 'lidmaatschap':
+                        // Not handled, read only field
+                        break;
                     default:
                         break;
                 }
             }
 
             // Try to save form data
+            if (!empty($contact->getAddress()->getId()) || !empty($contact->getAddress()->getValue('street_name'))) {
+                $contact->getAddress()->save();
+            }
+            if (!empty($contact->getEmail()->getValue('email'))) {
+                $contact->getEmail()->save();
+            }
             $contact->save();
 
             // Add activity
@@ -179,5 +197,28 @@ class MemberPaymentFormHandler extends BaseFormHandler
 
         // Return entry
         return $entry;
+    }
+
+    /**
+     * Filter membership choices so only currently active memberships can be selected.
+     *
+     * @param \GF_Field $field Form Field
+     * @param EntityCollection|Membership[] $memberships Memberships
+     */
+    public function filterMembershipChoices(&$field, $memberships)
+    {
+        foreach($field->choices as $key => $choice) {
+            foreach($memberships as $membership) {
+                if($choice['value'] === $membership->membership_type_id || $choice['value'] === $membership->membership_name) {
+                    continue 2;
+                }
+            }
+
+            unset($field->choices[$key]);
+        }
+
+        if(count($field->choices) === 0) {
+            $field->choices = [['text' => '- Geen actief lidmaatschap gevonden! -', 'value' => null]];
+        }
     }
 }

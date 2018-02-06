@@ -20,8 +20,8 @@ class Membership extends DefaultMembership
     public static function getActiveMemberships($contact_id = null)
     {
         return EntityCollection::get('Membership', [
-            'membership_type_id'   => ['Lid', 'Lid (NVJ)'],
-            'membership_status_id' => ['New', 'Current', 'Grace'],
+            'membership_type_id'   => ['IN' => ['Lid', 'Lid (partner)', 'Lid (student)']],
+            'membership_status_id' => ['IN' => ['New', 'Current', 'Grace']],
             'contact_id'           => $contact_id,
         ]);
     }
